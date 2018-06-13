@@ -70,8 +70,6 @@ namespace Frends.SAPConnector
             [DefaultValue("MARA")]
             public string TableName { get; set; }
 
-            public Parameter[] Parameters { get; set; }
-
             [DisplayFormat(DataFormatString = "Text")]
             [DefaultValue("MATNR")]
             public String Fields { get; set; }
@@ -201,7 +199,15 @@ namespace Frends.SAPConnector
                             throw new Exception("Failed to populate function input structure.", e);
                         }
 
-                        sapFunction.Invoke(connection.Destination);
+
+                        try
+                        {
+                            sapFunction.Invoke(connection.Destination);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new Exception("Invoking function failed.", e);
+                        }
 
                         var tables = GetTableNames(sapFunction);
                         var exportParams = GetExportParameters(sapFunction);
@@ -238,21 +244,38 @@ namespace Frends.SAPConnector
         public static dynamic ExecuteQuery(InputQuery query, Options options)
         {
             List<string> rows = new List<string>();
-
             DataTable results = new DataTable("DATA");
-
+            JArray dataRows = new JArray();
             string[] field_names = query.Fields.Split(",".ToCharArray());
+
             RfcConfigParameters connectionParams = new RfcConfigParameters();
-            String[] connectionStringArray = query.ConnectionString.Split(';');
-
-
-            foreach (String configEntry in connectionStringArray)
-            {
-                connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
-            }
-
-            RfcDestination destination = RfcDestinationManager.GetDestination(connectionParams);
+            RfcDestination destination;
             IRfcFunction readTable;
+            IRfcTable t;
+
+            try
+            {
+                String[] connectionStringArray = query.ConnectionString.Split(';');
+
+                foreach (String configEntry in connectionStringArray)
+                {
+                    connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed reading parameters from connection string", e);
+            }
+            
+            try
+            {
+                destination = RfcDestinationManager.GetDestination(connectionParams);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Cannot get SAP destination.", e);
+            }
+            
             try
             {
                 switch (options.ReadTableTargetRFC)
@@ -271,51 +294,74 @@ namespace Frends.SAPConnector
             }
             catch (RfcBaseException ex)
             {
-                throw (ex);
+                throw new Exception("Failed to fetch reader function metadata.", ex);
+            }
+            
+            // Populate required import tables
+            try
+            {
+                readTable.SetValue("query_table", query.TableName);
+                readTable.SetValue("delimiter", "~");
+                t = readTable.GetTable("DATA");
+                t.Clear();
+                t = readTable.GetTable("FIELDS");
+                t.Clear();
+
+                if (field_names.Length > 0)
+                {
+                    t.Append(field_names.Length);
+                    int i = 0;
+                    foreach (string n in field_names)
+                    {
+                        t.CurrentIndex = i++;
+                        t.SetValue(0, n);
+                    }
+                }
+
+                t = readTable.GetTable("OPTIONS");
+                t.Clear();
+                t.Append(1);
+                t.CurrentIndex = 0;
+                t.SetValue(0, query.Filter);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to set input values", e);
             }
 
-            readTable.SetValue("query_table", query.TableName);
-            readTable.SetValue("delimiter", "~");
-            IRfcTable t = readTable.GetTable("DATA");
-            t.Clear();
-            t = readTable.GetTable("FIELDS");
-            t.Clear();
-
-            if (field_names.Length > 0)
+            try
             {
-                t.Append(field_names.Length);
-                int i = 0;
-                foreach (string n in field_names)
+                readTable.Invoke(destination);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Failed to invoke SAP function.", e);
+            }
+            
+            try
+            {
+                t = readTable.GetTable("DATA");
+
+                int a = t.Count;
+                rows = new List<string>();
+
+                for (int x = 0; x < t.RowCount; x++)
                 {
-                    t.CurrentIndex = i++;
-                    t.SetValue(0, n);
+                    JObject dataObject = new JObject();
+
+                    t.CurrentIndex = x;
+                    String[] columnValues = t.GetString(0).Split('~');
+
+                    for (int i = 0; i < columnValues.Length; i++)
+                    {
+                        dataObject.Add(field_names[i], columnValues[i]);
+                    }
+                    dataRows.Add(dataObject);
                 }
             }
-
-            t = readTable.GetTable("OPTIONS");
-            t.Clear();
-            t.Append(1);
-            t.CurrentIndex = 0;
-            t.SetValue(0, query.Filter);
-            readTable.Invoke(destination);
-            t = readTable.GetTable("DATA");
-
-            JArray dataRows = new JArray();
-            int a = t.Count;
-            rows = new List<string>();
-
-            for (int x = 0; x < t.RowCount; x++)
+            catch (Exception e)
             {
-                JObject dataObject = new JObject();
-
-                t.CurrentIndex = x;
-                String[] columnValues = t.GetString(0).Split('~');
-
-                for (int i = 0; i < columnValues.Length; i++)
-                {
-                    dataObject.Add(field_names[i], columnValues[i]);
-                }
-                dataRows.Add(dataObject);
+                throw new Exception("Failed to read return values.", e);
             }
 
             return JToken.FromObject(dataRows);
