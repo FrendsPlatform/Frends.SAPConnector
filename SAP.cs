@@ -12,6 +12,8 @@ namespace Frends.SAPConnector
 {
     public static class SAP
     {
+        private static readonly int FilterMaxLen = 72;
+
         public class Parameter
         {
             public String Name { get; set; }
@@ -187,7 +189,7 @@ namespace Frends.SAPConnector
                         }
                         catch (Exception e)
                         {
-                            throw new Exception("Failed to create function.", e);
+                            throw new Exception($"Failed to create function: {e.Message}", e);
                         }
 
                         try
@@ -196,7 +198,7 @@ namespace Frends.SAPConnector
                         }
                         catch (Exception e)
                         {
-                            throw new Exception("Failed to populate function input structure.", e);
+                            throw new Exception($"Failed to populate function input structure: {e.Message}", e);
                         }
 
 
@@ -206,7 +208,7 @@ namespace Frends.SAPConnector
                         }
                         catch (Exception e)
                         {
-                            throw new Exception("Invoking function failed.", e);
+                            throw new Exception($"Invoking function failed: {e.Message}", e);
                         }
 
                         var tables = GetTableNames(sapFunction);
@@ -264,7 +266,7 @@ namespace Frends.SAPConnector
             }
             catch (Exception e)
             {
-                throw new Exception("Failed reading parameters from connection string", e);
+                throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
             }
             
             try
@@ -273,7 +275,7 @@ namespace Frends.SAPConnector
             }
             catch (Exception e)
             {
-                throw new Exception("Cannot get SAP destination.", e);
+                throw new Exception($"Cannot get SAP destination: {e.Message}", e);
             }
             
             try
@@ -300,8 +302,8 @@ namespace Frends.SAPConnector
             // Populate required import tables
             try
             {
-                readTable.SetValue("query_table", query.TableName);
-                readTable.SetValue("delimiter", "~");
+                readTable.SetValue("QUERY_TABLE", query.TableName);
+                readTable.SetValue("DELIMITER", "~");
                 t = readTable.GetTable("DATA");
                 t.Clear();
                 t = readTable.GetTable("FIELDS");
@@ -320,13 +322,18 @@ namespace Frends.SAPConnector
 
                 t = readTable.GetTable("OPTIONS");
                 t.Clear();
-                t.Append(1);
-                t.CurrentIndex = 0;
-                t.SetValue(0, query.Filter);
+
+                foreach (var chunk in SplitSapFilterString(query.Filter))
+                {
+                    var row = t.Metadata.LineType.CreateStructure();
+                    row.SetValue("TEXT", chunk);
+                    t.Append(row);
+                }
+
             }
             catch (Exception e)
             {
-                throw new Exception("Failed to set input values", e);
+                throw new Exception($"Failed to set input values: {e.Message}", e);
             }
 
             try
@@ -335,7 +342,7 @@ namespace Frends.SAPConnector
             }
             catch (Exception e)
             {
-                throw new Exception("Failed to invoke SAP function.", e);
+                throw new Exception($"Failed to invoke SAP function: {e.Message}", e);
             }
             
             try
@@ -361,7 +368,7 @@ namespace Frends.SAPConnector
             }
             catch (Exception e)
             {
-                throw new Exception("Failed to read return values.", e);
+                throw new Exception($"Failed to read return values: {e.Message}", e);
             }
 
             return JToken.FromObject(dataRows);
@@ -498,6 +505,38 @@ namespace Frends.SAPConnector
 
                 default:
                     return typeof(string);
+            }
+        }
+
+        /// <summary>
+        /// One filter row in RFC_READ_TABLE can hold maximum of 72 characters.
+        /// Longer queries need to be split.
+        /// Strings can only be split between words.
+        /// </summary>
+        /// <param name="filter">SAP query filter (WHERE condition)</param>
+        /// <returns>Array of strings of max 72 characters each</returns>
+        private static IEnumerable<string> SplitSapFilterString(string filter)
+        {
+            // replace newline with whitespace
+            var filterWithoutNewlines = filter.Replace("\n", " ");
+
+            if (filterWithoutNewlines.Length <= FilterMaxLen)
+            {
+                yield return filterWithoutNewlines;
+            }
+            else
+            {
+                // find whitespace to split at
+                int lastWhitespace = filterWithoutNewlines.Substring(0, FilterMaxLen + 1).LastIndexOf(' ');
+
+                if (lastWhitespace < 0)
+                    throw new Exception($"Query parameter length should not exceed {FilterMaxLen.ToString()} parameters");
+
+                yield return filterWithoutNewlines.Substring(0, lastWhitespace);
+
+                // Whitespace can be dropped
+                foreach (var chunk in SplitSapFilterString(filterWithoutNewlines.Substring(lastWhitespace + 1)))
+                    yield return chunk;
             }
         }
     }
