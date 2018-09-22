@@ -238,28 +238,25 @@ namespace Frends.SAPConnector
         }
 
         /// <summary>
-        /// Query SAP table
+        /// Query SAP table. TODO: Timeout value in options input does nothing.
         /// </summary>
         /// <param name="query">Query parameters</param>
         /// <param name="options">Connection options</param>
-        /// <returns>Dataset with table data</returns>
+        /// <returns>JToken containing data returned by table query</returns>
         public static dynamic ExecuteQuery(InputQuery query, Options options)
         {
-            List<string> rows = new List<string>();
-            DataTable results = new DataTable("DATA");
-            JArray dataRows = new JArray();
-            string[] field_names = query.Fields.Split(",".ToCharArray());
+            var dataRows = new JArray();
+            var fieldNames = query.Fields.Split(',');
+            IRfcFunction readerRfc;
 
-            RfcConfigParameters connectionParams = new RfcConfigParameters();
-            RfcDestination destination;
-            IRfcFunction readTable;
-            IRfcTable t;
+            var connectionParams = new RfcConfigParameters();
 
+            // Read connection parameters from task input
             try
             {
-                String[] connectionStringArray = query.ConnectionString.Split(';');
+                var connectionStringArray = query.ConnectionString.Split(';');
 
-                foreach (String configEntry in connectionStringArray)
+                foreach (var configEntry in connectionStringArray)
                 {
                     connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
                 }
@@ -268,107 +265,95 @@ namespace Frends.SAPConnector
             {
                 throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
             }
-            
-            try
+
+            using (var connection = new SapConnection(connectionParams))
             {
-                destination = RfcDestinationManager.GetDestination(connectionParams);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Cannot get SAP destination: {e.Message}", e);
-            }
-            
-            try
-            {
-                switch (options.ReadTableTargetRFC)
+                connection.Open();
+
+                try
                 {
-                    case ReadTableRFC.BBP_RFC_READ_TABLE:
-                        readTable = destination.Repository.CreateFunction("BBP_RFC_READ_TABLE");
-                        break;
-                    case ReadTableRFC.RFC_READ_TABLE:
-                        readTable = destination.Repository.CreateFunction("RFC_READ_TABLE");
-                        break;
-                    default:
-                        readTable = destination.Repository.CreateFunction("BBP_RFC_READ_TABLE");
-                        break;
+                    switch (options.ReadTableTargetRFC)
+                    {
+                        case ReadTableRFC.BBP_RFC_READ_TABLE:
+                            readerRfc = connection.Destination.Repository.CreateFunction("BBP_RFC_READ_TABLE");
+                            break;
+                        case ReadTableRFC.RFC_READ_TABLE:
+                            readerRfc = connection.Destination.Repository.CreateFunction("RFC_READ_TABLE");
+                            break;
+                        default:
+                            readerRfc = connection.Destination.Repository.CreateFunction("RFC_READ_TABLE");
+                            break;
+                    }
+
+                }
+                catch (RfcBaseException ex)
+                {
+                    throw new Exception("Failed to fetch reader function metadata.", ex);
                 }
 
-            }
-            catch (RfcBaseException ex)
-            {
-                throw new Exception("Failed to fetch reader function metadata.", ex);
-            }
-            
-            // Populate required import tables
-            try
-            {
-                readTable.SetValue("QUERY_TABLE", query.TableName);
-                readTable.SetValue("DELIMITER", "~");
-                t = readTable.GetTable("DATA");
-                t.Clear();
-                t = readTable.GetTable("FIELDS");
-                t.Clear();
-
-                if (field_names.Length > 0)
+                // Populate required import tables
+                try
                 {
-                    t.Append(field_names.Length);
-                    int i = 0;
-                    foreach (string n in field_names)
+                    readerRfc.SetValue("QUERY_TABLE", query.TableName);
+                    readerRfc.SetValue("DELIMITER", "~");
+
+                    var fieldsTable = readerRfc.GetTable("FIELDS");
+
+                    foreach (var field in fieldNames)
                     {
-                        t.CurrentIndex = i++;
-                        t.SetValue(0, n);
+                        var fieldsRow = fieldsTable.Metadata.LineType.CreateStructure();
+                        fieldsRow.SetValue(0, field.Trim());
+                        fieldsTable.Append(fieldsRow);
+                    }
+
+                    var optionsTable = readerRfc.GetTable("OPTIONS");
+
+                    foreach (var chunk in SplitSapFilterString(query.Filter))
+                    {
+                        var optionsRow = optionsTable.Metadata.LineType.CreateStructure();
+                        optionsRow.SetValue("TEXT", chunk);
+                        optionsTable.Append(optionsRow);
                     }
                 }
-
-                t = readTable.GetTable("OPTIONS");
-                t.Clear();
-
-                foreach (var chunk in SplitSapFilterString(query.Filter))
+                catch (Exception e)
                 {
-                    var row = t.Metadata.LineType.CreateStructure();
-                    row.SetValue("TEXT", chunk);
-                    t.Append(row);
+                    throw new Exception($"Failed to set input values: {e.Message}", e);
                 }
 
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to set input values: {e.Message}", e);
-            }
-
-            try
-            {
-                readTable.Invoke(destination);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to invoke SAP function: {e.Message}", e);
-            }
-            
-            try
-            {
-                t = readTable.GetTable("DATA");
-
-                int a = t.Count;
-                rows = new List<string>();
-
-                for (int x = 0; x < t.RowCount; x++)
+                try
                 {
-                    JObject dataObject = new JObject();
+                    readerRfc.Invoke(connection.Destination);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Failed to invoke SAP function: {e.Message}", e);
+                }
 
-                    t.CurrentIndex = x;
-                    String[] columnValues = t.GetString(0).Split('~');
+                // read results from DATA table, they are on rows delimited
+                // by configured delimiter symbol
+                try
+                {
+                    var exportData = readerRfc.GetTable("DATA");
 
-                    for (int i = 0; i < columnValues.Length; i++)
+                    for (var i = 0; i < exportData.RowCount; i++)
                     {
-                        dataObject.Add(field_names[i], columnValues[i]);
+                        var dataObject = new JObject();
+
+                        exportData.CurrentIndex = i;
+                        var columnValues = exportData.GetString(0).Split('~');
+
+                        for (var j = 0; j < columnValues.Length; j++)
+                        {
+                            dataObject.Add(fieldNames[j], columnValues[j]);
+                        }
+
+                        dataRows.Add(dataObject);
                     }
-                    dataRows.Add(dataObject);
                 }
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed to read return values: {e.Message}", e);
+                catch (Exception e)
+                {
+                    throw new Exception($"Failed to read return values: {e.Message}", e);
+                }
             }
 
             return JToken.FromObject(dataRows);
