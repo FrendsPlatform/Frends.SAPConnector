@@ -79,6 +79,10 @@ namespace Frends.SAPConnector
             [DisplayFormat(DataFormatString = "Text")]
             [DefaultValue("MTART EQ 'HAWA'")]
             public String Filter { get; set; }
+
+            [DisplayFormat(DataFormatString = "Text")]
+            [DefaultValue("~")]
+            public String Delimiter { get; set; }
         }
 
         public class Options
@@ -245,10 +249,17 @@ namespace Frends.SAPConnector
         /// <returns>Dataset with table data</returns>
         public static dynamic ExecuteQuery(InputQuery query, Options options)
         {
+            char delimiter;
+            if (query.Delimiter.Length == 1)
+            {
+                delimiter = query.Delimiter[0];
+            }
+            else throw new Exception("Delimiter should be single character!");
+
             List<string> rows = new List<string>();
             DataTable results = new DataTable("DATA");
             JArray dataRows = new JArray();
-            string[] field_names = query.Fields.Split(",".ToCharArray());
+            string[] fieldNames = query.Fields.Split(",".ToCharArray());
 
             RfcConfigParameters connectionParams = new RfcConfigParameters();
             RfcDestination destination;
@@ -303,17 +314,17 @@ namespace Frends.SAPConnector
             try
             {
                 readTable.SetValue("QUERY_TABLE", query.TableName);
-                readTable.SetValue("DELIMITER", "~");
+                readTable.SetValue("DELIMITER", delimiter);
                 t = readTable.GetTable("DATA");
                 t.Clear();
                 t = readTable.GetTable("FIELDS");
                 t.Clear();
 
-                if (field_names.Length > 0)
+                if (fieldNames.Length > 0)
                 {
-                    t.Append(field_names.Length);
+                    t.Append(fieldNames.Length);
                     int i = 0;
-                    foreach (string n in field_names)
+                    foreach (string n in fieldNames)
                     {
                         t.CurrentIndex = i++;
                         t.SetValue(0, n);
@@ -357,11 +368,11 @@ namespace Frends.SAPConnector
                     JObject dataObject = new JObject();
 
                     t.CurrentIndex = x;
-                    String[] columnValues = t.GetString(0).Split('~');
+                    String[] columnValues = t.GetString(0).Split(delimiter);
 
                     for (int i = 0; i < columnValues.Length; i++)
                     {
-                        dataObject.Add(field_names[i], columnValues[i]);
+                        dataObject.Add(fieldNames[i], columnValues[i]);
                     }
                     dataRows.Add(dataObject);
                 }
