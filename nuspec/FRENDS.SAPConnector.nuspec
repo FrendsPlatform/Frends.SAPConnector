@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>FRENDS.SAPConnector</id>
+		<version>1.2.21</version>
+		<title>FRENDS SAP tasks</title>
+		<authors>HiQ Finland</authors>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>FRENDS sap database tasks</description>
+		<summary />
+		<dependencies>
+			<dependency id="NSAPConnector_x64" version="1.0.2" />
+			<dependency id="Newtonsoft.Json" version="6.0.8" />
+		</dependencies>
+		<frameworkAssemblies>
+			<frameworkAssembly assemblyName="System" targetFramework="" />
+			<frameworkAssembly assemblyName="System.Data" targetFramework="" />
+		</frameworkAssemblies>
+    </metadata>
+      <files>
+        <file src="..\bin\Release\FRENDS.SAPConnector.dll" target="lib\net45\FRENDS.SAPConnector.dll" />
+        <file src="..\bin\Release\FRENDS.SAPConnector.xml" target="lib\net45\FRENDS.SAPConnector.xml" />
+      </files>
+</package>

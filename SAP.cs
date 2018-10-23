@@ -116,6 +116,7 @@ namespace Frends.SAPConnector
 
             using (var connection = new SapConnection(connectionParams))
             {
+
                 connection.Open();
 
                 var command = new SapCommand(Input.BAPIName, connection);
