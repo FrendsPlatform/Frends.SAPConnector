@@ -8,6 +8,8 @@ using Newtonsoft.Json.Linq;
 using SAP.Middleware.Connector;
 using System.Text.RegularExpressions;
 
+#pragma warning disable 1591
+
 namespace Frends.SAPConnector
 {
     public static class SAP

@@ -36,16 +36,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NSAPConnector, Version=1.0.2.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\NSAPConnector_x64.1.0.2\lib\NSAPConnector.dll</HintPath>
+      <HintPath>packages\NSapConnector.3.0.0\lib\NSAPConnector.dll</HintPath>
     </Reference>
     <Reference Include="sapnco, Version=3.0.0.42, Culture=neutral, PublicKeyToken=50436dca5c7f7d23, processorArchitecture=AMD64">
-      <HintPath>..\packages\NSAPConnector_x64.1.0.2\lib\sapnco.dll</HintPath>
+      <HintPath>packages\NSapConnector.3.0.0\lib\sapnco.dll</HintPath>
     </Reference>
     <Reference Include="sapnco_utils, Version=3.0.0.42, Culture=neutral, PublicKeyToken=50436dca5c7f7d23, processorArchitecture=AMD64">
-      <HintPath>..\packages\NSAPConnector_x64.1.0.2\lib\sapnco_utils.dll</HintPath>
+      <HintPath>packages\NSapConnector.3.0.0\lib\sapnco_utils.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -63,7 +63,12 @@
     <Compile Include="SAP.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="FRENDS.SAPConnector.nuspec" />
     <None Include="packages.config" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
