@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>FRENDS.SAPConnector</id>
-		<version>1.2.21</version>
+		<version>1.2.74</version>
 		<title>FRENDS SAP tasks</title>
 		<authors>HiQ Finland</authors>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>FRENDS sap database tasks</description>
+		<description>FRENDS SAP tasks</description>
 		<summary />
 		<dependencies>
-			<dependency id="NSAPConnector_x64" version="1.0.2" />
+			<dependency id="NSAPConnector_x64" version="[1.0.1]" />
 			<dependency id="Newtonsoft.Json" version="6.0.8" />
 		</dependencies>
 		<frameworkAssemblies>
@@ -18,7 +18,8 @@
 		</frameworkAssemblies>
     </metadata>
       <files>
-        <file src="..\bin\Release\FRENDS.SAPConnector.dll" target="lib\net45\FRENDS.SAPConnector.dll" />
-        <file src="..\bin\Release\FRENDS.SAPConnector.xml" target="lib\net45\FRENDS.SAPConnector.xml" />
+        <file src="..\Frends.SAPConnector\bin\x64\Release\FRENDS.SAPConnector.dll" target="lib\net45\FRENDS.SAPConnector.dll" />
+        <file src="..\Frends.SAPConnector\bin\x64\Release\FRENDS.SAPConnector.xml" target="lib\net45\FRENDS.SAPConnector.xml" />
+        <file src="..\Frends.SAPConnector\FrendsTaskMetadata.json" target="FrendsTaskMetadata.json"/>
       </files>
 </package>

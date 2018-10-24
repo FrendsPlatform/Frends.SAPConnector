@@ -99,49 +99,6 @@ namespace Frends.SAPConnector
         }
 
         /// <summary>
-        /// Execute BAPI that takes import parameters and return results as tables.
-        /// </summary>
-        /// <param name="Input"></param>
-        /// <returns></returns>
-        public static dynamic ExecuteBAPI(InputBAPI Input)
-        {
-            DataSet resultDataSet;
-            Dictionary<String, String> connectionParams = new Dictionary<string, string>();
-
-            // Read connection parameters from task input
-            try
-            {
-                String[] connectionStringArray = Input.ConnectionString.Split(';');
-
-                foreach (String configEntry in connectionStringArray)
-                {
-                    connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
-            }
-
-            using (var connection = new SapConnection(connectionParams))
-            {
-
-                connection.Open();
-
-                var command = new SapCommand(Input.BAPIName, connection);
-
-                foreach (Parameter param in Input.Parameters)
-                {
-                    command.Parameters.Add(param.Name, param.Value);
-                }
-
-                resultDataSet = command.ExecuteDataSet();
-            }
-
-            return JToken.FromObject(resultDataSet);
-        }
-
-        /// <summary>
         /// Execute SAP RFC-function.
         /// </summary>
         /// <returns>JToken dictionary of export parameter or table values returned by SAP function.</returns>

@@ -2,7 +2,6 @@
 FRENDS sap database tasks
 - [Installing](#installing)
 - [Tasks](#tasks)
-    - [ExecuteBAPI](#ExecuteBAPI)
 	- [ExecuteFunction](#ExecuteFunction)
     - [ExecuteQuery](#ExecuteQuery)
 - [License](#license)
@@ -15,25 +14,6 @@ You can install the task via FRENDS UI Task view, by searching for packages. You
 
 Tasks
 =====
-
-## ExecuteBAPI
-
-THIS IS OBSOLITE
-
-Frends.SAPConnector.ExecuteBAPI task to execute BAPI that takes import parameters and return results as tables.
-
-Input:
-
-| Property        | Type     | Description                      | Example                             |
-|-----------------|----------|----------------------------------|-------------------------------------|
-| Connection string   |          |                 |                |
-
-Result:
-
-| Property        | Type     | Description                 |
-|-----------------|----------|-----------------------------|
-| Table         | string   |                             |
-
 
 ## ExecuteFunction
 Frends.SAPConnector.ExecuteFunction task to xecute SAP RFC-function. Returns: JToken dictionary of export parameter or table values returned by SAP function.
