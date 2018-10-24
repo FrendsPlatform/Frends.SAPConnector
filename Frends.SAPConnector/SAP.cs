@@ -107,11 +107,20 @@ namespace Frends.SAPConnector
         {
             DataSet resultDataSet;
             Dictionary<String, String> connectionParams = new Dictionary<string, string>();
-            String[] connectionStringArray = Input.ConnectionString.Split(';');
 
-            foreach (String configEntry in connectionStringArray)
+            // Read connection parameters from task input
+            try
             {
-                connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
+                String[] connectionStringArray = Input.ConnectionString.Split(';');
+
+                foreach (String configEntry in connectionStringArray)
+                {
+                    connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
             }
 
             using (var connection = new SapConnection(connectionParams))
@@ -135,11 +144,22 @@ namespace Frends.SAPConnector
         /// <summary>
         /// Execute SAP RFC-function.
         /// </summary>
-        /// <param name="function">Name of the SAP function</param>
         /// <returns>JToken dictionary of export parameter or table values returned by SAP function.</returns>
         public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput)
         {
-            var connectionParams = ConnectionStringToDictionary(taskInput.ConnectionString.Value);
+
+            Dictionary<String, String> connectionParams = new Dictionary<string, string>();
+
+            // Read connection parameters from task input
+            try
+            {
+                connectionParams = ConnectionStringToDictionary(taskInput.ConnectionString.Value);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
+            }
+
             var returnvalues = new JObject();
             FunctionInput input;
             IRfcFunction sapFunction;
@@ -214,23 +234,32 @@ namespace Frends.SAPConnector
                             throw new Exception($"Invoking function failed: {e.Message}", e);
                         }
 
-                        var tables = GetTableNames(sapFunction);
-                        var exportParams = GetExportParameters(sapFunction);
-
-                        var tablesAsJObject = new JObject();
-
-                        foreach (var table in tables)
+                        try
                         {
-                            var rfcTable = sapFunction.GetTable(table);
-                            tablesAsJObject.Add(table, JToken.FromObject(RfcTableToDataTable(rfcTable, table)));
+
+                            var tables = GetTableNames(sapFunction);
+                            var exportParams = GetExportParameters(sapFunction);
+
+                            var tablesAsJObject = new JObject();
+
+                            foreach (var table in tables)
+                            {
+                                var rfcTable = sapFunction.GetTable(table);
+                                tablesAsJObject.Add(table, JToken.FromObject(RfcTableToDataTable(rfcTable, table)));
+                            }
+
+                            foreach (var parameter in exportParams)
+                            {
+                                tablesAsJObject.Add(parameter.Key, parameter.Value);
+                            }
+
+                            returnvalues.Add(f.Name, tablesAsJObject);
                         }
 
-                        foreach (var parameter in exportParams)
+                        catch (Exception e)
                         {
-                            tablesAsJObject.Add(parameter.Key, parameter.Value);
+                            throw new Exception($"Failed to read return values: {e.Message}", e);
                         }
-
-                        returnvalues.Add(f.Name, tablesAsJObject);
                     }
 
                     session.EndSession();
