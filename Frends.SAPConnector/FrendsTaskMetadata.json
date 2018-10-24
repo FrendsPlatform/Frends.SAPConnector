@@ -1,0 +1,10 @@
+﻿{
+  "Tasks": [
+    {
+      "TaskMethod": "Frends.SAPConnector.SAP.ExecuteFunction"
+    },
+    {
+      "TaskMethod": "Frends.SAPConnector.SAP.ExecuteQuery"
+    }
+  ]
+}
