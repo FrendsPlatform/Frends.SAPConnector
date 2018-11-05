@@ -7,6 +7,7 @@ using NSAPConnector;
 using Newtonsoft.Json.Linq;
 using SAP.Middleware.Connector;
 using System.Text.RegularExpressions;
+using FRENDS.SAPConnector;
 
 #pragma warning disable 1591
 
@@ -16,93 +17,12 @@ namespace Frends.SAPConnector
     {
         private static readonly int FilterMaxLen = 72;
 
-        public class Parameter
-        {
-            public String Name { get; set; }
-            public String Value { get; set; }
-        }
-
-        /// <summary>
-        /// RFC function to use for reading table
-        /// </summary>
-        public enum ReadTableRFC { BBP_RFC_READ_TABLE, RFC_READ_TABLE }
-        public enum InputType { PARAMETERS, JSON }
-
-        public class ExecuteFunctionInput
-        {
-            public ConnectionString ConnectionString { get; set; }
-
-            public InputType InputType { get; set; }
-
-            // Function calls in JSON format. Frends cannot use
-            // recursive inputs, therefore JSON is used and deserialized.
-            [DisplayFormat(DataFormatString = "Json")]
-            [UIHint(nameof(InputType), "", InputType.JSON)]
-            public string InputFunctions { get; set; }
-
-            [UIHint(nameof(InputType), "", InputType.PARAMETERS)]
-            public SimpleFunctionInput SimpleInput { get; set; }
-        }
-
-        public class ConnectionString
-        {
-            [PasswordPropertyText]
-            [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
-            public string Value { get; set; }
-        }
-
-        public class InputBAPI
-        {
-            [PasswordPropertyText]
-            [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
-            public string ConnectionString { get; set; }
-
-            [DisplayFormat(DataFormatString = "Text")]
-            [DefaultValue("BAPI_RFC_READ_TABLE")]
-            public string BAPIName { get; set; }
-
-            public Parameter[] Parameters { get; set; }
-        }
-
-        public class InputQuery
-        {
-            [PasswordPropertyText]
-            [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
-            public string ConnectionString { get; set; }
-
-            [DisplayFormat(DataFormatString = "Text")]
-            [DefaultValue("MARA")]
-            public string TableName { get; set; }
-
-            [DisplayFormat(DataFormatString = "Text")]
-            [DefaultValue("MATNR")]
-            public String Fields { get; set; }
-
-            [DisplayFormat(DataFormatString = "Text")]
-            [DefaultValue("MTART EQ 'HAWA'")]
-            public String Filter { get; set; }
-        }
-
-        public class Options
-        {
-            /// <summary>
-            /// Command timeout in seconds
-            /// </summary>
-            [DefaultValue(60)]
-            public int CommandTimeoutSeconds { get; set; }
-
-            /// <summary>
-            /// RFC to use for reading table.
-            /// </summary>
-            [DefaultValue(ReadTableRFC.RFC_READ_TABLE)]
-            public ReadTableRFC ReadTableTargetRFC { get; set; }
-        }
-
         /// <summary>
         /// Execute SAP RFC-function.
         /// </summary>
         /// <returns>JToken dictionary of export parameter or table values returned by SAP function.</returns>
         public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput)
+        
         {
 
             Dictionary<String, String> connectionParams = new Dictionary<string, string>();
@@ -110,7 +30,10 @@ namespace Frends.SAPConnector
             // Read connection parameters from task input
             try
             {
-                connectionParams = ConnectionStringToDictionary(taskInput.ConnectionString.Value);
+                connectionParams = ConnectionStringToDictionary(taskInput.ConnectionString);
+
+                // TODO add timeout here as dictionary 
+                //https://github.com/ion-sapoval/NSAPConnector/blob/4ceeaed13f8531608cf6808dabb5020d643fb4cd/NSAPConnector.Core/SapConfigParameters.cs
             }
             catch (Exception e)
             {
@@ -227,7 +150,7 @@ namespace Frends.SAPConnector
         }
 
         /// <summary>
-        /// Query SAP table. TODO: Timeout value in options input does nothing.
+        /// Query SAP table.
         /// </summary>
         /// <param name="query">Query parameters</param>
         /// <param name="options">Connection options</param>
@@ -249,6 +172,10 @@ namespace Frends.SAPConnector
                 {
                     connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
                 }
+
+
+                // TODO add timeout here as dictionary 
+                //https://github.com/ion-sapoval/NSAPConnector/blob/4ceeaed13f8531608cf6808dabb5020d643fb4cd/NSAPConnector.Core/SapConfigParameters.cs
             }
             catch (Exception e)
             {

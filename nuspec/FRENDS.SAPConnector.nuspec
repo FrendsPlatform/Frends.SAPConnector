@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>FRENDS.SAPConnector</id>
-		<version>1.2.74</version>
+		<version>1.2.75</version>
 		<title>FRENDS SAP tasks</title>
 		<authors>HiQ Finland</authors>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
