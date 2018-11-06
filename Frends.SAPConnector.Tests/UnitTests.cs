@@ -1,6 +1,7 @@
 ﻿using System;
 using FRENDS.SAPConnector;
 using NUnit.Framework;
+using Newtonsoft.Json;
 
 namespace Frends.SAPConnector.Tests
 {
@@ -9,56 +10,72 @@ namespace Frends.SAPConnector.Tests
     {
         private static readonly string ConnectionString2 = "ASHOST=xxx;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1";
 
-
-        [SetUp]
-        public void Foo()
-        {   
-            return;
-        }
-
-    [Test]
-
-    public void FirstTest()
+        [Test]
+        public void FirstTest()
         {
-        var input = new ExecuteFunctionInput
-        {
-            ConnectionString = ConnectionString2,
-            InputType = InputType.PARAMETERS,
-            SimpleInput = new SimpleFunctionInput
+            var input = new ExecuteFunctionInput
             {
-                Functions = new SimpleStructure[]
+                ConnectionString = ConnectionString2,
+                InputType = InputType.PARAMETERS,
+                SimpleInput = new SimpleFunctionInput
                 {
-                    new SimpleStructure
+                    Functions = new SimpleStructure[]
                     {
-                        Name = "DATE_GET_WEEK",
-                        Fields = new Field[]
+                        new SimpleStructure
                         {
-                            new Field { Name = "DATE", Value = "20181031" }
-
+                            Name = "DATE_GET_WEEK",
+                            Fields = new Field[]
+                            {
+                                new Field { Name = "DATE", Value = "20181031" }
+                            }
                         }
                     }
                 }
-            }
-        };
-
-    var results = SAP.ExecuteFunction(input);
-    Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
-    }
-
-
-    [Test]
-
-    public void SecondTest()
-    {
-        var input = new ExecuteFunctionInput
-        {
-            ConnectionString = ConnectionString2,
-            InputType = InputType.JSON,
-            InputFunctions = "[{\"Name\": \"DATE_GET_WEEK\", \"Fields\": [{\"Name\": \"DATE\", \"Value\": \"20181031\"}] }]",
-        };
-
-        var results = SAP.ExecuteFunction(input);
-        Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
+            };
+            var results = SAP.ExecuteFunction(input);
+            Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
         }
-}
+
+
+        [Test]
+
+        public void SecondTest()
+        {
+            var input = new ExecuteFunctionInput
+            {
+                ConnectionString = ConnectionString2,
+                InputType = InputType.JSON,
+                InputFunctions = "[{\"Name\": \"DATE_GET_WEEK\", \"Fields\": [{\"Name\": \"DATE\", \"Value\": \"20181031\"}] }]",
+            };
+
+            var results = SAP.ExecuteFunction(input);
+            Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
+        }
+
+        [Test]
+        public void ThirdTest()
+        {
+            var input = new InputQuery
+            {
+                ConnectionString = ConnectionString2,
+                TableName = "MARA",
+                Fields = "MATNR",
+                Filter = "MTART EQ 'HAWA'",
+            };
+
+            var options = new Options
+            {
+                CommandTimeoutSeconds = 60,
+                ReadTableTargetRFC = ReadTableRFC.RFC_READ_TABLE
+            };
+
+
+            var results = SAP.ExecuteQuery(input, options);
+
+            // This data is found on trial version of SAP S/4HANA 1709 FPS01, Fully-Activated Appliance
+            string expected = "[{\"MATNR\":\"TG12\"},{\"MATNR\":\"TG10\"},{\"MATNR\":\"TG11\"},{\"MATNR\":\"TG13\"},{\"MATNR\":\"TG14\"},{\"MATNR\":\"TG20\"},{\"MATNR\":\"TG21\"},{\"MATNR\":\"TG22\"},{\"MATNR\":\"QM001\"},{\"MATNR\":\"EWMS4-01\"},{\"MATNR\":\"EWMS4-02\"},{\"MATNR\":\"QM002\"},{\"MATNR\":\"QM003\"},{\"MATNR\":\"QM004\"},{\"MATNR\":\"EWMS4-10\"},{\"MATNR\":\"EWMS4-11\"},{\"MATNR\":\"EWMS4-40\"},{\"MATNR\":\"EWMS4-41\"},{\"MATNR\":\"EWMS4-42\"},{\"MATNR\":\"EWMS4-20\"},{\"MATNR\":\"EWMS4-03\"},{\"MATNR\":\"MZ-TG-Y120\"},{\"MATNR\":\"MZ-TG-Y200\"},{\"MATNR\":\"MZ-TG-Y240\"}]";
+
+            Assert.That(JsonConvert.SerializeObject(results), Is.EqualTo(expected));
+        }
+    }
 }

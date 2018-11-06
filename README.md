@@ -164,9 +164,9 @@ Clone a copy of the repo
 
 Restore dependencies
 
-`nuget restore frends.file`
+`nuget restore Frends.SAPConnect`
 
-Rebuild the project
+Rebuild the project, target x64 CPU architechture. *Any CPU or x86 wont work.*
 
 Run Tests with nunit3. Tests can be found under
 
