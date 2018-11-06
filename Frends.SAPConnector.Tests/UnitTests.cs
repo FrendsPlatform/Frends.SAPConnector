@@ -1,7 +1,8 @@
-﻿using System;
-using FRENDS.SAPConnector;
+﻿using FRENDS.SAPConnector;
 using NUnit.Framework;
 using Newtonsoft.Json;
+using SAP.Middleware.Connector;
+using System;
 
 namespace Frends.SAPConnector.Tests
 {
@@ -11,7 +12,7 @@ namespace Frends.SAPConnector.Tests
         private static readonly string ConnectionString2 = "ASHOST=xxx;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1";
 
         [Test]
-        public void FirstTest()
+        public void ExecuteFunctionWithParameters()
         {
             var input = new ExecuteFunctionInput
             {
@@ -39,7 +40,7 @@ namespace Frends.SAPConnector.Tests
 
         [Test]
 
-        public void SecondTest()
+        public void ExecuteFunctionWithJSON()
         {
             var input = new ExecuteFunctionInput
             {
@@ -53,7 +54,7 @@ namespace Frends.SAPConnector.Tests
         }
 
         [Test]
-        public void ThirdTest()
+        public void ExecuteQuery()
         {
             var input = new InputQuery
             {
@@ -69,7 +70,6 @@ namespace Frends.SAPConnector.Tests
                 ReadTableTargetRFC = ReadTableRFC.RFC_READ_TABLE
             };
 
-
             var results = SAP.ExecuteQuery(input, options);
 
             // This data is found on trial version of SAP S/4HANA 1709 FPS01, Fully-Activated Appliance
@@ -77,5 +77,58 @@ namespace Frends.SAPConnector.Tests
 
             Assert.That(JsonConvert.SerializeObject(results), Is.EqualTo(expected));
         }
+
+        [Test]
+        public void ExecuteFunctionWithParametersException()
+        {
+            var input = new ExecuteFunctionInput
+            {
+                ConnectionString = ConnectionString2,
+                InputType = InputType.JSON,
+                InputFunctions = "[{\"Name\": \"DATE_GET_WEEKXD\", \"Fields\": [{\"Name\": \"DATE\", \"Value\": \"20181031\"}] }]",
+            };
+
+            try
+            {
+                var results = SAP.ExecuteFunction(input);
+            }
+            catch (Exception e)
+            {
+                Assert.That(e.Message, Is.EqualTo("Failed to create function: metadata for function DATE_GET_WEEKXD not available: FU_NOT_FOUND: Function module DATE_GET_WEEKXD does not exist"));
+
+            }
+        }
+
+        [Test]
+        public void ExecuteQueryException()
+        {
+            var input = new InputQuery
+            {
+                ConnectionString = ConnectionString2,
+                TableName = "MARANOTEXIST",
+                Fields = "MATNR",
+                Filter = "MTART EQ 'HAWA'",
+            };
+
+            var options = new Options
+            {
+                CommandTimeoutSeconds = 60,
+                ReadTableTargetRFC = ReadTableRFC.RFC_READ_TABLE
+            };
+
+            try
+            {
+                var results = SAP.ExecuteQuery(input, options);
+            }
+            catch (Exception e)
+            {
+                Assert.That(e.Message, Is.EqualTo("Failed to invoke SAP function: TABLE_NOT_AVAILABLE"));
+            }
+        }
+
+            // https://searchsap.techtarget.com/tip/Getting-around-RFC_READ_TABLE-limitations 
+
+            // tommin spostissa taulu ongelma
+
     }
 }

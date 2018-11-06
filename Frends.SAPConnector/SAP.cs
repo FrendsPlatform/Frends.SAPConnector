@@ -92,6 +92,7 @@ namespace Frends.SAPConnector
                         }
                         catch (Exception e)
                         {
+                            session.EndSession();
                             throw new Exception($"Failed to create function: {e.Message}", e);
                         }
 
@@ -101,16 +102,19 @@ namespace Frends.SAPConnector
                         }
                         catch (Exception e)
                         {
+                            session.EndSession();
                             throw new Exception($"Failed to populate function input structure: {e.Message}", e);
                         }
 
 
                         try
                         {
+                            session.EndSession();
                             sapFunction.Invoke(connection.Destination);
                         }
                         catch (Exception e)
                         {
+                            session.EndSession();
                             throw new Exception($"Invoking function failed: {e.Message}", e);
                         }
 
@@ -138,6 +142,7 @@ namespace Frends.SAPConnector
 
                         catch (Exception e)
                         {
+                            session.EndSession();
                             throw new Exception($"Failed to read return values: {e.Message}", e);
                         }
                     }
@@ -195,6 +200,9 @@ namespace Frends.SAPConnector
                             break;
                         case ReadTableRFC.RFC_READ_TABLE:
                             readerRfc = connection.Destination.Repository.CreateFunction("RFC_READ_TABLE");
+                            break;
+                        case ReadTableRFC.CUSTOM_FUNCTION:
+                            readerRfc = connection.Destination.Repository.CreateFunction(options.CustomFuntionName);
                             break;
                         default:
                             readerRfc = connection.Destination.Repository.CreateFunction("RFC_READ_TABLE");

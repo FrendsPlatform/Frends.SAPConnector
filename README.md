@@ -81,7 +81,7 @@ Key "Structures" defines object that have atleas name.
       "Fields":[
          {
             "Name":"PARTNER_GUID",
-            "Value":"{{#var.partnerguid}}"
+            "Value":"16c0f469-aef0-4f22-ae78-20c964d74b9d"
          }
       ]
    }
@@ -105,7 +105,7 @@ Parameters can freevly chauined to, so they complete JSON could be:
                     "Fields": [
                       {
                         "Name": "PARTNER_GUID",
-                        "Value": "{{#var.partnerguid}}"
+                        "Value": "16c0f469-aef0-4f22-ae78-20c964d74b9d"
                       }
                     ]
                   }
@@ -153,7 +153,7 @@ Input:
 License
 =======
 
-This project is licensed under the MIT License - see the LICENSE file for details
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 Building
 ========

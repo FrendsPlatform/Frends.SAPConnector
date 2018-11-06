@@ -11,7 +11,7 @@ namespace FRENDS.SAPConnector
     /// <summary>
     /// RFC function to use for reading table
     /// </summary>
-    public enum ReadTableRFC { BBP_RFC_READ_TABLE, RFC_READ_TABLE }
+    public enum ReadTableRFC { BBP_RFC_READ_TABLE, RFC_READ_TABLE, CUSTOM_FUNCTION }
 
     /// <summary>
     /// Use JSON or predefined key-value or  pairs to define parameters to RFC function.
@@ -69,6 +69,12 @@ namespace FRENDS.SAPConnector
         /// </summary>
         [DefaultValue(ReadTableRFC.RFC_READ_TABLE)]
         public ReadTableRFC ReadTableTargetRFC { get; set; }
+
+        /// <summary>
+        /// Name of function to be used.
+        /// </summary>
+        [DefaultValue(ReadTableRFC.CUSTOM_FUNCTION)]
+        public string CustomFuntionName { get; set; }
     }
 
 }
