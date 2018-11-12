@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SAP.Middleware.Connector;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 #pragma warning disable 1591
 
@@ -9,10 +11,14 @@ namespace Frends.SAPConnector
     public interface ISapStructure
     {
         void PopulateRfcDataContainer(IRfcDataContainer container);
+
         Field[] Fields { get; set; }
+
         string Name { get; set; }
     }
-
+    /// <summary>
+    /// Array of function to be called.
+    /// </summary>
     public class SimpleFunctionInput
     {
         public SimpleStructure[] Functions { get; set; }
@@ -30,9 +36,20 @@ namespace Frends.SAPConnector
         }
     }
 
+    /// <summary>
+    /// Function to be called.
+    /// </summary>
     public class SimpleStructure : ISapStructure
     {
+        /// <summary>
+        /// Name of RFC function.
+        /// </summary>
+        [DisplayName ("Function Name")]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Array of parameter(s).
+        /// </summary>
         public Field[] Fields { get; set; }
 
         public void PopulateRfcDataContainer(IRfcDataContainer container)
@@ -103,7 +120,14 @@ namespace Frends.SAPConnector
 
     public class Field
     {
+        /// <summary>
+        /// Name of parameter.
+        /// </summary>
+        [DisplayName ("Parameter Name")]
         public string Name { get; set; }
+        /// <summary>
+        /// Value of parameter.
+        /// </summary>
         public string Value { get; set; }
     }
 }

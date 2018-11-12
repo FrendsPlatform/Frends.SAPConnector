@@ -20,7 +20,9 @@ namespace FRENDS.SAPConnector
 
     public class ExecuteFunctionInput
     {
-
+        /// <summary>
+        /// Connection string.
+        /// </summary>
         [PasswordPropertyText]
         [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
         public string ConnectionString { get; set; }
@@ -34,33 +36,55 @@ namespace FRENDS.SAPConnector
         [UIHint(nameof(InputType), "", InputType.JSON)]
         public string InputFunctions { get; set; }
 
+        /// <summary>
+        /// Function calls with simple parameters.
+        /// </summary>
         [UIHint(nameof(InputType), "", InputType.PARAMETERS)]
         public SimpleFunctionInput SimpleInput { get; set; }
     }
 
     public class InputQuery
     {
+        /// <summary>
+        /// Connection string.
+        /// </summary>
         [PasswordPropertyText]
         [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
         public string ConnectionString { get; set; }
 
+        /// <summary>
+        /// Table name being queried.
+        /// </summary>
         [DisplayFormat(DataFormatString = "Text")]
         [DefaultValue("MARA")]
         public string TableName { get; set; }
 
+        /// <summary>
+        /// Fields queried. Separeted with comma.
+        /// </summary>
         [DisplayFormat(DataFormatString = "Text")]
         [DefaultValue("MATNR")]
         public String Fields { get; set; }
 
+        /// <summary>
+        /// Filter, think as WHERE in SQL.
+        /// </summary>
         [DisplayFormat(DataFormatString = "Text")]
         [DefaultValue("MTART EQ 'HAWA'")]
         public String Filter { get; set; }
+
+        /// <summary>
+        /// NOT IMPLEMENTED YET! Delimeter used in table.
+        /// </summary>
+        [DisplayFormat(DataFormatString = "Text")]
+        [DefaultValue("NOT IMPLEMENTED YET!")]
+        public String Delimiter { get; set; }
     }
 
     public class Options
     {
         /// <summary>
-        /// Command timeout in seconds
+        /// NOT IMPLEMENTED YET! Command timeout in seconds.
         /// </summary>
         [DefaultValue(60)]
         public int CommandTimeoutSeconds { get; set; }
@@ -73,7 +97,9 @@ namespace FRENDS.SAPConnector
         /// <summary>
         /// Name of function to be used.
         /// </summary>
-        [DefaultValue(ReadTableRFC.CUSTOM_FUNCTION)]
+        [DisplayFormat(DataFormatString = "Text")]
+        [UIHint(nameof(ReadTableTargetRFC), "", ReadTableRFC.CUSTOM_FUNCTION)]
+        [DefaultValue("NOT IMPLEMENTED YET!")]   // ZRFC_READ_TABLE
         public string CustomFuntionName { get; set; }
     }
 

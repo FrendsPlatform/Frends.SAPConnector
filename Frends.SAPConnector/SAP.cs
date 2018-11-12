@@ -20,7 +20,7 @@ namespace Frends.SAPConnector
         /// <summary>
         /// Execute SAP RFC-function.
         /// </summary>
-        /// <returns>JToken dictionary of export parameter or table values returned by SAP function.</returns>
+        /// <returns>JToken dictionary of export parameter or table values returned by SAP function. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
         public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput)
         
         {
@@ -159,7 +159,7 @@ namespace Frends.SAPConnector
         /// </summary>
         /// <param name="query">Query parameters</param>
         /// <param name="options">Connection options</param>
-        /// <returns>JToken containing data returned by table query</returns>
+        /// <returns>JToken containing data returned by table query. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
         public static dynamic ExecuteQuery(InputQuery query, Options options)
         {
             var dataRows = new JArray();
@@ -178,9 +178,9 @@ namespace Frends.SAPConnector
                     connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
                 }
 
+                // TODO add timeout here 
+                //  connectionParams.Add(SapConfigParameters.IdleTimeout, options.CommandTimeoutSeconds.ToString());
 
-                // TODO add timeout here as dictionary 
-                //https://github.com/ion-sapoval/NSAPConnector/blob/4ceeaed13f8531608cf6808dabb5020d643fb4cd/NSAPConnector.Core/SapConfigParameters.cs
             }
             catch (Exception e)
             {

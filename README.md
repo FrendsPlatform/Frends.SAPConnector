@@ -1,8 +1,16 @@
 # Frends.SAPConnector
-FRENDS sap database tasks
+FRENDS SAP tasks to execute RFC functions Querying tables.  
+
+These tasks require the Microsoft C++ Runtime DLLs version 10.0 (contained in Microsoft Visual C++ 2010 Redistributables), so they must be installed in advance. These tasks will also only work with the 64-bit processor.
+
+These tasks rely on SAP Connector for Microsoft .NET 3.0 https://support.sap.com/en/product/connectors/msnet.html. Support for connector will end at December 31, 2020.
+
+At the moment tasks don't cache table metadata coming from the SAP. In some circumstances, this might slow the performance as metadata have to be fetched every time. 
+
+
 - [Installing](#installing)
 - [Tasks](#tasks)
-	- [ExecuteFunction](#ExecuteFunction)
+    - [ExecuteFunction](#ExecuteFunction)
     - [ExecuteQuery](#ExecuteQuery)
 - [License](#license)
 - [Building](#building)
@@ -10,11 +18,10 @@ FRENDS sap database tasks
 
 Installing
 ==========
-You can install the task via FRENDS UI Task view, by searching for packages. You can also download the latest NuGet package from https://www.myget.org/feed/frends/package/nuget/Frends.File and import it manually via the Task view.
 
-These task requires the Microsoft C++ Runtime DLLs version 10.0 (contained in Microsoft Visual C++ 2010 Redistributables), so they must be installed in advance. These task will also only work with 64 bit processor.
+**NOTE: During development following task is not available from the following feed:**
 
-These task relies on SAP Connector for Microsoft .NET 3.0 https://support.sap.com/en/product/connectors/msnet.html Support for connector will end at December 31, 2020.
+You can install the task via FRENDS UI Task view, by searching for packages. You can also download the latest NuGet package from https://www.myget.org/feed/frends/package/nuget/Frends.SAPConnector. and import it manually via the Task view.
 
 Tasks
 =====
@@ -26,28 +33,38 @@ Input:
 
 | Property        | Type     | Description                       | Example                               |
 |-----------------|----------|-----------------------------------|---------------------------------------|
-| Connection string | string | Connection String to be used to connect to the SAP.   |   ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;   |   
- | Input type | enum | Defines if PARAMETERS or JSON is used.    |    | 
-| PARAMETERS |          |                 |                |
-| JSON | string | Function call parameters in JSON format. | See bellow.  |
+| Connection string | string | Connection String to be used to connect to the SAP.   |   `ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;`   |   
+ | Input type | enum | Defines if PARAMETERS or JSON is used.    | `PARAMETERS`   | 
+| PARAMETERS | enum | Function call parameters in PARAMETERS format. | See below.  |
+| JSON | string | Function call parameters in JSON format. | See below.  |
 
 
 ### Parameters 
 
-Input type PARAMETERS can be used when RFC function takes simple values as parameter. Parameters are defined by giving parameter name and input value for it. 
+Input type PARAMETERS can be used when RFC function(s) takes simple values as parameters. Parameters are defined by giving parameter name and an input value for it. It is possible to define many function and functions can take many key-value pairs as parameters.
 
+For example, DATE_GET_WEEK function can be used to calculate the week number for 2018-10-31 (October 31st, 2018) by the following configuration:
+
+| Property        | Type     | Description                       | Example                               |
+|-----------------|----------|-----------------------------------|---------------------------------------|
+| Functions | array | Array Name of function(s) and parameter(s) to be called. |  | 
+| name | string | Name of function to be called. |   `DATE_GET_WEEK`   |   
+| Fields | array | Defines if PARAMETERS or JSON is used.    |  | 
+| Name | string | Defines if PARAMETERS or JSON is used.    | `DATE`   | 
+| Value | string | Defines if PARAMETERS or JSON is used.    | `20181031`   | 
+
+Example values would return object "DATE_GET_WEEK" with property "WEEK" with value "201844".
 
 ### JSON 
 
-Input type JSON can be used when RFC function takes arbitary data as parameter. Frends cannot use recursive inputs, 
-therefore JSON is used and deserialized.
+Input type JSON can be used when RFC function takes arbitrary data as a parameter. Frends cannot use recursive inputs, therefore JSON is used and deserialized.
 
-JSON follows format that JSNO.Net serialize uses. Format of the configuration ias following: On a top level it is Array of objects. Each object is function being called. Each object has atleast a key "name" that defines function being called. If function takes parameters they are defined too.
+JSON follows format that JSON.Net uses for serializing objects. The format of the configuration is following:
+On a top level is an Array of objects. Each object is a function being called. Each object has at least a key "name" that defines function being called. If the function takes parameters they are defined too. Parameters are defined with keys "Fields", "Tables" and "Structures"
 
 Parameters are same as in SAP and they can be chained in any way.
 
-
-Key "Field" defines array of fieleds. 
+Key "Field" defines an array of fields. 
 ```json
 "Fields": [
    {
@@ -55,7 +72,8 @@ Key "Field" defines array of fieleds.
       "Value":"16c0f469-aef0-4f22-ae78-20c964d74b9d"
    }
 ```
-Kay "Tables" defines that sap has table, in JSON it key "Name" defining table name and Key "Rows" defines array of rows. Rows them self can contain anything, e.g. fields.
+
+Kay "Tables" defines an array of tables. The array contains objects i.e. tables. In each object key, "Name" defines a table name and Key "Rows" defines an array of rows in the table. Rows them self can contain fields, structures, and tables.
 ```json
 "Tables": [
    {
@@ -73,7 +91,7 @@ Kay "Tables" defines that sap has table, in JSON it key "Name" defining table na
    ]
 ```
 
-Key "Structures" defines object that have atleas name.
+Key "Structures" defines an object that has at least name.
 ```json
 "Structures":[
    {
@@ -129,6 +147,26 @@ Parameters can freevly chauined to, so they complete JSON could be:
 ]
 ```
 
+** Example **
+
+For example, DATE_GET_WEEK function can be used to calculate the week number for 2018-10-31 (October 31st, 2018) by the following configuration:
+
+```json
+[
+  {
+    "Name": "DATE_GET_WEEK",
+        "Fields": [
+          {
+            "Name": "DATE",
+            "Value": "20181031"
+            }
+        ]
+  }
+]
+```
+
+This would return object "DATE_GET_WEEK" with property "WEEK" with value "201844".
+
 ### Result
 
 Returns a JToken dictionary of export parameter or table values returned by SAP function.
@@ -140,15 +178,15 @@ Input:
 
 | Property        | Type     | Description                       | Example                               |
 |-----------------|----------|-----------------------------------|---------------------------------------|
-| Connection string | string | Connection String to be used to connect to the SAP.   |   ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;   |   
- | TableName | enum | Table Name   | MARA | 
-| Fields | string  |     |   MATNR    |
-| Filter | string | Function call parameters in JSON format. | MTART EQ 'HAWA' |
-| CommandTimeoutSeconds | Int | Command timeout in seconds | 60 |
-| ReadTableTargetRFC | enum | RFC to use for reading table. | RFC_READ_TABLE |
-
-
-
+| Connection string | string | Connection String to be used to connect to the SAP.   |   `ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;`   |   
+ | TableName | enum | Table Name   | `MARA` | 
+| Fields | string  |     |   `MATNR`   |
+| Filter | string | Function call parameters in JSON format. | `MTART EQ 'HAWA'` |
+| CommandTimeoutSeconds | Int | Command timeout in seconds | `60` |
+| ReadTableTargetRFC | enum | Defines if RFC_READ_TABLE or BBP_RFC_READ_TABLE or some other function call is used  to read SAP tables. CUSTOM_FUNCTION enables writing any function name. | `RFC_READ_TABLE` |
+| Delimiter | string | NOT IMPLEMENTED YET! Delimiter used in the table. | `~` |
+| CommandTimeoutSeconds | int | NOT IMPLEMENTED YET! Command timeout in seconds. | `MTART EQ 'HAWA'` |
+| CustomFuntionName | string | When ReadTableTargetRFC is set to CUSTOM_FUNCTION this parameter is used to define name of any function. The function must take the same parameters and return similar data as RFC_READ_TABLE and BBP_RFC_READ_TABLE. A custom function can be used to overcome limitations of build-in functions. | `ZRFC_READ_TABLE` |
 
 License
 =======
@@ -166,13 +204,13 @@ Restore dependencies
 
 `nuget restore Frends.SAPConnect`
 
-Rebuild the project, target x64 CPU architechture. *Any CPU or x86 wont work.*
+Rebuild the project, target x64 CPU architecture. *Any CPU or x86 won't work.*
 
 Run Tests with nunit3. Tests can be found under
 
 `Frends.File.Tests\bin\Release\Frends.SAPConnector.Tests.dll`
 
-Create a nuget package
+Create a NuGet package
 
 `nuget pack nuspec/Frends.File.nuspec`
 
