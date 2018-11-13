@@ -74,10 +74,10 @@ namespace FRENDS.SAPConnector
         public String Filter { get; set; }
 
         /// <summary>
-        /// NOT IMPLEMENTED YET! Delimeter used in table.
+        /// Delimeter used in table.
         /// </summary>
         [DisplayFormat(DataFormatString = "Text")]
-        [DefaultValue("NOT IMPLEMENTED YET!")]
+        [DefaultValue("~")]
         public String Delimiter { get; set; }
     }
 

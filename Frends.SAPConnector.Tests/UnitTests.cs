@@ -9,7 +9,7 @@ namespace Frends.SAPConnector.Tests
     [TestFixture]
     public class UnitTest
     {
-        private static readonly string ConnectionString2 = "ASHOST=xxx;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1";
+        private static readonly string ConnectionString2 = "ASHOST=13.94.141.8;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1";
 
         [Test]
         public void ExecuteFunctionWithParameters()
@@ -62,6 +62,7 @@ namespace Frends.SAPConnector.Tests
                 TableName = "MARA",
                 Fields = "MATNR",
                 Filter = "MTART EQ 'HAWA'",
+                Delimiter = "~",
             };
 
             var options = new Options
@@ -108,6 +109,7 @@ namespace Frends.SAPConnector.Tests
                 TableName = "MARANOTEXIST",
                 Fields = "MATNR",
                 Filter = "MTART EQ 'HAWA'",
+                Delimiter = "~",
             };
 
             var options = new Options

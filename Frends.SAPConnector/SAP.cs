@@ -162,6 +162,13 @@ namespace Frends.SAPConnector
         /// <returns>JToken containing data returned by table query. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
         public static dynamic ExecuteQuery(InputQuery query, Options options)
         {
+            char delimiter;
+            if (query.Delimiter.Length == 1)
+            {
+                delimiter = query.Delimiter[0];
+            }
+            else throw new Exception("Delimiter should be single character!");
+
             var dataRows = new JArray();
             var fieldNames = query.Fields.Split(',');
             IRfcFunction readerRfc;
@@ -219,7 +226,7 @@ namespace Frends.SAPConnector
                 try
                 {
                     readerRfc.SetValue("QUERY_TABLE", query.TableName);
-                    readerRfc.SetValue("DELIMITER", "~");
+                    readerRfc.SetValue("DELIMITER", delimiter);
 
                     var fieldsTable = readerRfc.GetTable("FIELDS");
 
@@ -264,7 +271,7 @@ namespace Frends.SAPConnector
                         var dataObject = new JObject();
 
                         exportData.CurrentIndex = i;
-                        var columnValues = exportData.GetString(0).Split('~');
+                        var columnValues = exportData.GetString(0).Split(delimiter);
 
                         for (var j = 0; j < columnValues.Length; j++)
                         {
