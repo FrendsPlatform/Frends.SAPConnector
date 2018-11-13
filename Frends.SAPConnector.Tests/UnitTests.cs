@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Newtonsoft.Json;
 using SAP.Middleware.Connector;
 using System;
+using System.Threading;
 
 namespace Frends.SAPConnector.Tests
 {
@@ -33,7 +34,7 @@ namespace Frends.SAPConnector.Tests
                     }
                 }
             };
-            var results = SAP.ExecuteFunction(input);
+            var results = SAP.ExecuteFunction(input, new CancellationToken());
             Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
         }
 
@@ -49,7 +50,7 @@ namespace Frends.SAPConnector.Tests
                 InputFunctions = "[{\"Name\": \"DATE_GET_WEEK\", \"Fields\": [{\"Name\": \"DATE\", \"Value\": \"20181031\"}] }]",
             };
 
-            var results = SAP.ExecuteFunction(input);
+            var results = SAP.ExecuteFunction(input, new CancellationToken());
             Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
         }
 
@@ -71,7 +72,7 @@ namespace Frends.SAPConnector.Tests
                 ReadTableTargetRFC = ReadTableRFC.RFC_READ_TABLE
             };
 
-            var results = SAP.ExecuteQuery(input, options);
+            var results = SAP.ExecuteQuery(input, options, new CancellationToken());
 
             // This data is found on trial version of SAP S/4HANA 1709 FPS01, Fully-Activated Appliance
             string expected = "[{\"MATNR\":\"TG12\"},{\"MATNR\":\"TG10\"},{\"MATNR\":\"TG11\"},{\"MATNR\":\"TG13\"},{\"MATNR\":\"TG14\"},{\"MATNR\":\"TG20\"},{\"MATNR\":\"TG21\"},{\"MATNR\":\"TG22\"},{\"MATNR\":\"QM001\"},{\"MATNR\":\"EWMS4-01\"},{\"MATNR\":\"EWMS4-02\"},{\"MATNR\":\"QM002\"},{\"MATNR\":\"QM003\"},{\"MATNR\":\"QM004\"},{\"MATNR\":\"EWMS4-10\"},{\"MATNR\":\"EWMS4-11\"},{\"MATNR\":\"EWMS4-40\"},{\"MATNR\":\"EWMS4-41\"},{\"MATNR\":\"EWMS4-42\"},{\"MATNR\":\"EWMS4-20\"},{\"MATNR\":\"EWMS4-03\"},{\"MATNR\":\"MZ-TG-Y120\"},{\"MATNR\":\"MZ-TG-Y200\"},{\"MATNR\":\"MZ-TG-Y240\"}]";
@@ -91,7 +92,7 @@ namespace Frends.SAPConnector.Tests
 
             try
             {
-                var results = SAP.ExecuteFunction(input);
+                var results = SAP.ExecuteFunction(input, new CancellationToken());
             }
             catch (Exception e)
             {
@@ -120,7 +121,7 @@ namespace Frends.SAPConnector.Tests
 
             try
             {
-                var results = SAP.ExecuteQuery(input, options);
+                var results = SAP.ExecuteQuery(input, options, new CancellationToken());
             }
             catch (Exception e)
             {

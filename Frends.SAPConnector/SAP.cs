@@ -8,6 +8,8 @@ using Newtonsoft.Json.Linq;
 using SAP.Middleware.Connector;
 using System.Text.RegularExpressions;
 using FRENDS.SAPConnector;
+using System.Threading;
+
 
 #pragma warning disable 1591
 
@@ -21,7 +23,7 @@ namespace Frends.SAPConnector
         /// Execute SAP RFC-function.
         /// </summary>
         /// <returns>JToken dictionary of export parameter or table values returned by SAP function. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
-        public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput)
+        public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput, CancellationToken cancellationToken)
         
         {
 
@@ -86,6 +88,11 @@ namespace Frends.SAPConnector
                     
                     foreach (var f in input.Functions)
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            session.EndSession();
+                            throw new OperationCanceledException(cancellationToken);
+                        }
                         try
                         {
                             sapFunction = repo.CreateFunction(f.Name);
@@ -109,7 +116,6 @@ namespace Frends.SAPConnector
 
                         try
                         {
-                            session.EndSession();
                             sapFunction.Invoke(connection.Destination);
                         }
                         catch (Exception e)
@@ -128,12 +134,22 @@ namespace Frends.SAPConnector
 
                             foreach (var table in tables)
                             {
+                                if (cancellationToken.IsCancellationRequested)
+                                {
+                                    session.EndSession();
+                                    throw new OperationCanceledException(cancellationToken);
+                                }
                                 var rfcTable = sapFunction.GetTable(table);
                                 tablesAsJObject.Add(table, JToken.FromObject(RfcTableToDataTable(rfcTable, table)));
                             }
 
                             foreach (var parameter in exportParams)
                             {
+                                if (cancellationToken.IsCancellationRequested)
+                                {
+                                    session.EndSession();
+                                    throw new OperationCanceledException(cancellationToken);
+                                }
                                 tablesAsJObject.Add(parameter.Key, parameter.Value);
                             }
 
@@ -160,7 +176,7 @@ namespace Frends.SAPConnector
         /// <param name="query">Query parameters</param>
         /// <param name="options">Connection options</param>
         /// <returns>JToken containing data returned by table query. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
-        public static dynamic ExecuteQuery(InputQuery query, Options options)
+        public static dynamic ExecuteQuery(InputQuery query, Options options, CancellationToken cancellationToken)
         {
             char delimiter;
             if (query.Delimiter.Length == 1)
@@ -232,6 +248,10 @@ namespace Frends.SAPConnector
 
                     foreach (var field in fieldNames)
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException(cancellationToken);
+                        }
                         var fieldsRow = fieldsTable.Metadata.LineType.CreateStructure();
                         fieldsRow.SetValue(0, field.Trim());
                         fieldsTable.Append(fieldsRow);
@@ -241,6 +261,10 @@ namespace Frends.SAPConnector
 
                     foreach (var chunk in SplitSapFilterString(query.Filter))
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException(cancellationToken);
+                        }
                         var optionsRow = optionsTable.Metadata.LineType.CreateStructure();
                         optionsRow.SetValue("TEXT", chunk);
                         optionsTable.Append(optionsRow);
