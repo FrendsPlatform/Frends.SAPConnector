@@ -10,7 +10,7 @@ namespace Frends.SAPConnector.Tests
     [TestFixture]
     public class UnitTest
     {
-        private static readonly string ConnectionString2 = "ASHOST=52.236.183.148;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
+        private static readonly string ConnectionString2 = "ASHOST=23.97.254.75;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
 
         [Test]
         public void ExecuteFunctionWithParameters()

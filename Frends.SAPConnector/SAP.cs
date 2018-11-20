@@ -488,9 +488,6 @@ namespace Frends.SAPConnector
             try
             {
                 connectionParams = ConnectionStringToDictionary(ConnectionString);
-
-                // TODO add timeout here as dictionary 
-                //https://github.com/ion-sapoval/NSAPConnector/blob/4ceeaed13f8531608cf6808dabb5020d643fb4cd/NSAPConnector.Core/SapConfigParameters.cs
             }
             catch (Exception e)
             {
@@ -505,6 +502,7 @@ namespace Frends.SAPConnector
                 {
                     throw new OperationCanceledException(cancellationToken);
                 }
+
                 connection.Open();
                 var repo = connection.Destination.Repository;
 
@@ -515,6 +513,7 @@ namespace Frends.SAPConnector
                     {
                         throw new OperationCanceledException(cancellationToken);
                     }
+
                     switch (function)
                     {
                         case RfcRepositoryModifierFunctions.ClearAbapObjectMetadata:
@@ -561,15 +560,8 @@ namespace Frends.SAPConnector
                             break;
                     }
                 }
-
-
             }
-
-
             return returnvalues;
-
         }
-
     }
-
 }
