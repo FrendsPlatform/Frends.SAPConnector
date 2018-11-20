@@ -8,7 +8,9 @@ using Frends.SAPConnector;
 
 namespace FRENDS.SAPConnector
 {
-
+    /// <summary>
+    /// Available functions from RfcRepository class.
+    /// </summary>
     public enum RfcRepositoryModifierFunctions
     {
         ClearAbapObjectMetadata, ClearAllMetadata, ClearFunctionMetadata, ClearTableMetadata, CreateFunction,
@@ -102,7 +104,7 @@ namespace FRENDS.SAPConnector
         /// </summary>
         [DisplayFormat(DataFormatString = "Text")]
         [UIHint(nameof(ReadTableTargetRFC), "", ReadTableRFC.CUSTOM_FUNCTION)]
-        [DefaultValue("NOT IMPLEMENTED YET!")]   // ZRFC_READ_TABLE
+        [DefaultValue("ZRFC_READ_TABLE")]
         public string CustomFuntionName { get; set; }
     }
 
