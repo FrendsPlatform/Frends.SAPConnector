@@ -34,8 +34,6 @@ namespace Frends.SAPConnector
             {
                 connectionParams = ConnectionStringToDictionary(taskInput.ConnectionString);
 
-                // TODO add timeout here as dictionary 
-                //https://github.com/ion-sapoval/NSAPConnector/blob/4ceeaed13f8531608cf6808dabb5020d643fb4cd/NSAPConnector.Core/SapConfigParameters.cs
             }
             catch (Exception e)
             {
@@ -79,6 +77,9 @@ namespace Frends.SAPConnector
             using (var connection = new SapConnection(connectionParams))
             {
                 connection.Open();
+
+                // https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/content.htm?no_cache=true
+                // https://archive.sap.com/discussions/thread/3184438
 
                 var repo = connection.Destination.Repository;
 
@@ -189,20 +190,12 @@ namespace Frends.SAPConnector
             var fieldNames = query.Fields.Split(',');
             IRfcFunction readerRfc;
 
-            var connectionParams = new RfcConfigParameters();
+            Dictionary<String, String> connectionParams = new Dictionary<string, string>();
 
             // Read connection parameters from task input
             try
             {
-                var connectionStringArray = query.ConnectionString.Split(';');
-
-                foreach (var configEntry in connectionStringArray)
-                {
-                    connectionParams.Add(configEntry.TrimEnd().TrimStart().Split('=')[0], configEntry.TrimEnd().TrimStart().Split('=')[1]);
-                }
-
-                // TODO add timeout here 
-                //  connectionParams.Add(SapConfigParameters.IdleTimeout, options.CommandTimeoutSeconds.ToString());
+                connectionParams = ConnectionStringToDictionary(query.ConnectionString);
 
             }
             catch (Exception e)
@@ -405,7 +398,8 @@ namespace Frends.SAPConnector
             var connectionParams = new Dictionary<string, string>();
             foreach (var param in sapConnStr.Split(';'))
             {
-                connectionParams.Add(param.TrimEnd().TrimStart().Split('=')[0], param.TrimEnd().TrimStart().Split('=')[1]);
+                if (param != "") // it is allowed to ; be last character    
+                    connectionParams.Add(param.TrimEnd().TrimStart().Split('=')[0], param.TrimEnd().TrimStart().Split('=')[1]);
             }
             return connectionParams;
         }
@@ -479,5 +473,103 @@ namespace Frends.SAPConnector
                     yield return chunk;
             }
         }
+
+        /// <summary>
+        /// Exposes methods of RfcRepository class of SAP Connector for Microsoft .NET 3.0. Usually this task is not needed for other than debugging purposes. See: https://github.com/FrendsPlatform/Frends.SAPConnector SAP documentation for Repository: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
+        /// </summary>
+        /// <param name="repositoryInput">Query parameters</param>
+        /// <returns>Dynamic object or NULL containing data returned by selected function. </returns>
+        public static dynamic RfcRepositoryModifier(string ConnectionString, RfcRepositoryModifierFunctions function, string name, CancellationToken cancellationToken)
+        {
+
+            Dictionary<String, String> connectionParams = new Dictionary<string, string>();
+
+            // Read connection parameters from task input
+            try
+            {
+                connectionParams = ConnectionStringToDictionary(ConnectionString);
+
+                // TODO add timeout here as dictionary 
+                //https://github.com/ion-sapoval/NSAPConnector/blob/4ceeaed13f8531608cf6808dabb5020d643fb4cd/NSAPConnector.Core/SapConfigParameters.cs
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
+            }
+
+            var returnvalues = new Object();
+
+            using (var connection = new SapConnection(connectionParams))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(cancellationToken);
+                }
+                connection.Open();
+                var repo = connection.Destination.Repository;
+
+                using (var session = new SapSession(connection))
+                {
+                    session.StartSession();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException(cancellationToken);
+                    }
+                    switch (function)
+                    {
+                        case RfcRepositoryModifierFunctions.ClearAbapObjectMetadata:
+                            repo.ClearAbapObjectMetadata();
+                            break;
+                        case RfcRepositoryModifierFunctions.ClearAllMetadata:
+                            repo.ClearAllMetadata();
+                            break;
+                        case RfcRepositoryModifierFunctions.ClearFunctionMetadata:
+                            repo.ClearFunctionMetadata();
+                            break;
+                        case RfcRepositoryModifierFunctions.ClearTableMetadata:
+                            repo.ClearTableMetadata();
+                            break;
+                        case RfcRepositoryModifierFunctions.GetFunctionMetadata:
+                            returnvalues = repo.GetFunctionMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.CreateFunction:
+                            returnvalues = repo.CreateFunction(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.GetAbapObjectMetadata:
+                            returnvalues = repo.GetAbapObjectMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.GetStructureMetadata:
+                            returnvalues = repo.GetStructureMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.GetTableMetadata:
+                            returnvalues = repo.GetTableMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.RemoveAbapObjectMetadata:
+                            repo.RemoveAbapObjectMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.RemoveFunctionMetadata:
+                            repo.RemoveFunctionMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.RemoveStructureMetadata:
+                            repo.RemoveStructureMetadata(name);
+                            break;
+                        case RfcRepositoryModifierFunctions.RemoveTableMetadata:
+                            repo.RemoveTableMetadata(name);
+                            break;
+                        default:
+                            returnvalues = "Unkwon/Not implemented function!";
+                            break;
+                    }
+                }
+
+
+            }
+
+
+            return returnvalues;
+
+        }
+
     }
+
 }

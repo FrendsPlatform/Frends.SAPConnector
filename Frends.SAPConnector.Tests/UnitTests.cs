@@ -10,7 +10,7 @@ namespace Frends.SAPConnector.Tests
     [TestFixture]
     public class UnitTest
     {
-        private static readonly string ConnectionString2 = "ASHOST=13.94.141.8;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1";
+        private static readonly string ConnectionString2 = "ASHOST=52.236.183.148;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
 
         [Test]
         public void ExecuteFunctionWithParameters()
@@ -68,7 +68,6 @@ namespace Frends.SAPConnector.Tests
 
             var options = new Options
             {
-                CommandTimeoutSeconds = 60,
                 ReadTableTargetRFC = ReadTableRFC.RFC_READ_TABLE
             };
 
@@ -115,7 +114,6 @@ namespace Frends.SAPConnector.Tests
 
             var options = new Options
             {
-                CommandTimeoutSeconds = 60,
                 ReadTableTargetRFC = ReadTableRFC.RFC_READ_TABLE
             };
 
@@ -129,9 +127,16 @@ namespace Frends.SAPConnector.Tests
             }
         }
 
-            // https://searchsap.techtarget.com/tip/Getting-around-RFC_READ_TABLE-limitations 
+        [Test]
+        public void RepoBrowser()
+        {
 
-            // tommin spostissa taulu ongelma
+            var ret = SAP.RfcRepositoryModifier(ConnectionString2, RfcRepositoryModifierFunctions.GetFunctionMetadata, "DATE_GET_WEEK", new CancellationToken());
+            string expected = "{\"Name\":\"DATE_GET_WEEK\",\"ContainerType\":3,\"BasXmlEnabled\":false,\"ParameterCount\":2,\"ExceptionCount\":1,\"Locked\":true}";
 
+            Assert.That(JsonConvert.SerializeObject(ret), Is.EqualTo(expected));
+
+        }
     }
 }
+ 

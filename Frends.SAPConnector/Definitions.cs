@@ -8,6 +8,14 @@ using Frends.SAPConnector;
 
 namespace FRENDS.SAPConnector
 {
+
+    public enum RfcRepositoryModifierFunctions
+    {
+        ClearAbapObjectMetadata, ClearAllMetadata, ClearFunctionMetadata, ClearTableMetadata, CreateFunction,
+        GetAbapObjectMetadata, GetFunctionMetadata, GetStructureMetadata, GetTableMetadata, RemoveAbapObjectMetadata,
+        RemoveFunctionMetadata, RemoveStructureMetadata, RemoveTableMetadata
+    }
+
     /// <summary>
     /// RFC function to use for reading table
     /// </summary>
@@ -24,7 +32,7 @@ namespace FRENDS.SAPConnector
         /// Connection string.
         /// </summary>
         [PasswordPropertyText]
-        [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
+        [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;IDLE_TIMEOUT=60;\"")]
         public string ConnectionString { get; set; }
 
         public InputType InputType { get; set; }
@@ -49,7 +57,7 @@ namespace FRENDS.SAPConnector
         /// Connection string.
         /// </summary>
         [PasswordPropertyText]
-        [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;\"")]
+        [DefaultValue("\"ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=****;IDLE_TIMEOUT=60;\"")]
         public string ConnectionString { get; set; }
 
         /// <summary>
@@ -83,11 +91,6 @@ namespace FRENDS.SAPConnector
 
     public class Options
     {
-        /// <summary>
-        /// NOT IMPLEMENTED YET! Command timeout in seconds.
-        /// </summary>
-        [DefaultValue(60)]
-        public int CommandTimeoutSeconds { get; set; }
         /// <summary>
         /// RFC to use for reading table.
         /// </summary>

@@ -5,6 +5,9 @@
     },
     {
       "TaskMethod": "Frends.SAPConnector.SAP.ExecuteQuery"
+    },
+	    {
+      "TaskMethod": "Frends.SAPConnector.SAP.RfcRepositoryModifier"
     }
   ]
 }

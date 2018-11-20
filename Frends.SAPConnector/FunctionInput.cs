@@ -16,6 +16,7 @@ namespace Frends.SAPConnector
 
         string Name { get; set; }
     }
+
     /// <summary>
     /// Array of function to be called.
     /// </summary>
