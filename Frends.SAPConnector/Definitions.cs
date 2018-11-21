@@ -18,6 +18,22 @@ namespace FRENDS.SAPConnector
         RemoveFunctionMetadata, RemoveStructureMetadata, RemoveTableMetadata
     }
 
+    public class RfcRepositoryInput
+    {
+        /// <summary>
+        /// Connection string.
+        /// </summary>
+        public string ConnectionString;
+        /// <summary>
+        /// Function to be called.
+        /// </summary>
+        public RfcRepositoryModifierFunctions function;
+        /// <summary>
+        /// Parameter to function. Usually name of RFC function.
+        /// </summary>
+        public string name;
+    }
+
     /// <summary>
     /// RFC function to use for reading table
     /// </summary>
@@ -27,6 +43,7 @@ namespace FRENDS.SAPConnector
     /// Use JSON or predefined key-value or  pairs to define parameters to RFC function.
     /// </summary>
     public enum InputType { PARAMETERS, JSON }
+
 
     public class ExecuteFunctionInput
     {

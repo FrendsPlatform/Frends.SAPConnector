@@ -478,9 +478,9 @@ namespace Frends.SAPConnector
         /// <summary>
         /// Exposes methods of RfcRepository class of SAP Connector for Microsoft .NET 3.0. Usually this task is not needed for other than debugging purposes. See: https://github.com/FrendsPlatform/Frends.SAPConnector#RfcRepositoryModifier SAP documentation for Repository: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
         /// </summary>
-        /// <param name="repositoryInput">Query parameters</param>
+        /// <param name="input">Query parameters</param>
         /// <returns>Dynamic object or NULL containing data returned by selected function. </returns>
-        public static dynamic RfcRepositoryModifier(string ConnectionString, RfcRepositoryModifierFunctions function, string name, CancellationToken cancellationToken)
+        public static dynamic RfcRepositoryModifier(RfcRepositoryInput input, CancellationToken cancellationToken)
         {
 
             Dictionary<String, String> connectionParams = new Dictionary<string, string>();
@@ -488,7 +488,7 @@ namespace Frends.SAPConnector
             // Read connection parameters from task input
             try
             {
-                connectionParams = ConnectionStringToDictionary(ConnectionString);
+                connectionParams = ConnectionStringToDictionary(input.ConnectionString);
             }
             catch (Exception e)
             {
@@ -515,7 +515,7 @@ namespace Frends.SAPConnector
                         throw new OperationCanceledException(cancellationToken);
                     }
 
-                    switch (function)
+                    switch (input.function)
                     {
                         case RfcRepositoryModifierFunctions.ClearAbapObjectMetadata:
                             repo.ClearAbapObjectMetadata();
@@ -530,31 +530,31 @@ namespace Frends.SAPConnector
                             repo.ClearTableMetadata();
                             break;
                         case RfcRepositoryModifierFunctions.GetFunctionMetadata:
-                            returnvalues = repo.GetFunctionMetadata(name);
+                            returnvalues = repo.GetFunctionMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.CreateFunction:
-                            returnvalues = repo.CreateFunction(name);
+                            returnvalues = repo.CreateFunction(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.GetAbapObjectMetadata:
-                            returnvalues = repo.GetAbapObjectMetadata(name);
+                            returnvalues = repo.GetAbapObjectMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.GetStructureMetadata:
-                            returnvalues = repo.GetStructureMetadata(name);
+                            returnvalues = repo.GetStructureMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.GetTableMetadata:
-                            returnvalues = repo.GetTableMetadata(name);
+                            returnvalues = repo.GetTableMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.RemoveAbapObjectMetadata:
-                            repo.RemoveAbapObjectMetadata(name);
+                            repo.RemoveAbapObjectMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.RemoveFunctionMetadata:
-                            repo.RemoveFunctionMetadata(name);
+                            repo.RemoveFunctionMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.RemoveStructureMetadata:
-                            repo.RemoveStructureMetadata(name);
+                            repo.RemoveStructureMetadata(input.name);
                             break;
                         case RfcRepositoryModifierFunctions.RemoveTableMetadata:
-                            repo.RemoveTableMetadata(name);
+                            repo.RemoveTableMetadata(input.name);
                             break;
                         default:
                             returnvalues = "Unkwon/Not implemented function!";

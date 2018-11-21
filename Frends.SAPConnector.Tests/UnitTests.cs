@@ -9,7 +9,7 @@ namespace Frends.SAPConnector.Tests
     [TestFixture]
     public class UnitTest
     {
-        private static readonly string ConnectionString2 = "ASHOST=23.97.254.75;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
+        private static readonly string ConnectionString2 = "ASHOST=xxx;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
 
         [Test]
         public void ExecuteFunctionWithParameters()
@@ -127,8 +127,14 @@ namespace Frends.SAPConnector.Tests
         [Test]
         public void RepoBrowser()
         {
+            var input = new RfcRepositoryInput
+            {
+                ConnectionString = ConnectionString2,
+                function = RfcRepositoryModifierFunctions.GetFunctionMetadata,
+                name = "DATE_GET_WEEK",
+            };
 
-            var ret = SAP.RfcRepositoryModifier(ConnectionString2, RfcRepositoryModifierFunctions.GetFunctionMetadata, "DATE_GET_WEEK", new CancellationToken());
+            var ret = SAP.RfcRepositoryModifier(input, new CancellationToken());
             string expected = "{\"Name\":\"DATE_GET_WEEK\",\"ContainerType\":3,\"BasXmlEnabled\":false,\"ParameterCount\":2,\"ExceptionCount\":1,\"Locked\":true}";
 
             Assert.That(JsonConvert.SerializeObject(ret), Is.EqualTo(expected));
