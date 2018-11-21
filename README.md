@@ -29,11 +29,11 @@ Tasks
 ## ExecuteFunction
 Frends.SAPConnector.SAP.ExecuteFunction task to execute SAP RFC-function. Returns: JToken dictionary of export parameter or table values returned by SAP function.
 
-Input:
+### Input:
 
 | Property        | Type     | Description                       | Example                               |
 |-----------------|----------|-----------------------------------|---------------------------------------|
-| Connection string | string | Connection String to be used to connect to the SAP.   |   `ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;`   |
+| Connection string | string | Connection String to be used to connect to the SAP.   |   `ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;IDLE_TIMEOUT=60;`   |
  | Input type | enum | Defines if PARAMETERS or JSON is used.    | `PARAMETERS`   |
 | PARAMETERS | enum | Function call parameters in PARAMETERS format. | See below.  |
 | JSON | string | Function call parameters in JSON format. | See below.  |
@@ -54,7 +54,7 @@ For example, DATE_GET_WEEK function can be used to calculate the week number for
 
 Example values would return object "DATE_GET_WEEK" with property "WEEK" with value "201844".
 
-### JSON 
+### JSON
 
 Input type JSON can be used when RFC function takes arbitrary data as a parameter. Frends cannot use recursive inputs, therefore JSON is used and deserialized.
 
@@ -63,7 +63,8 @@ On a top level is an Array of objects. Each object is a function being called. E
 
 Parameters are same as in SAP and they can be chained in any way.
 
-Key "Field" defines an array of fields. 
+Key "Field" defines an array of fields.
+
 ```json
 "Fields": [
    {
@@ -177,20 +178,18 @@ Returns a JToken dictionary of export parameter or table values returned by SAP 
 ## ExecuteQuery
 Frends.SAPConnector.ExecuteQuery task to query SAP table.
 
-Input:
+### Input:
 
 | Property        | Type     | Description                       | Example                               |
 |-----------------|----------|-----------------------------------|---------------------------------------|
-| Connection string | string | Connection String to be used to connect to the SAP.   |   `ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;`   |   
- | TableName | enum | Table Name   | `MARA` | 
+| Connection string | string | Connection String to be used to connect to the SAP.   |   `ASHOST=sapserver01;SYSNR=00;CLIENT=000;LANG=EN;USER=SAPUSER;PASSWD=*;IDLE_TIMEOUT=60;`   |
+ | TableName | enum | Table Name   | `MARA` |
 | Fields | string  |     |   `MATNR`   |
 | Filter | string | Function call parameters in JSON format. | `MTART EQ 'HAWA'` |
 | CommandTimeoutSeconds | Int | Command timeout in seconds | `60` |
 | ReadTableTargetRFC | enum | Defines if RFC_READ_TABLE or BBP_RFC_READ_TABLE or some other function call is used to read SAP tables. CUSTOM_FUNCTION enables writing any function name. | `RFC_READ_TABLE` |
-| Delimiter | string | NOT IMPLEMENTED YET! Delimiter used in the table. | `~` |
-| CommandTimeoutSeconds | int | NOT IMPLEMENTED YET! Command timeout in seconds. | `MTART EQ 'HAWA'` |
-| CustomFuntionName | string | When ReadTableTargetRFC is set to CUSTOM_FUNCTION this parameter is used to define name of any function. The function must take the same parameters and return similar data as RFC_READ_TABLE and BBP_RFC_READ_TABLE. A custom function can be used to overcome limitations of built-in functions. | `ZRFC_READ_TABLE` |
-
+| Delimiter | string | Delimiter used in the table. | `~` |
+| CustomFunctionName | string | When ReadTableTargetRFC is set to CUSTOM_FUNCTION this parameter is used to define name of any function. The function must take the same parameters and return similar data as RFC_READ_TABLE and BBP_RFC_READ_TABLE. A custom function can be used to overcome limitations of built-in functions. | `ZRFC_READ_TABLE` |
 
 ## RfcRepositoryModifier
 Frends.SAPConnector.RfcRepositoryModifier task to handle RfcRepository class from NCO 3.0 direcly. These functions are rarely neede and they are documented at: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
@@ -213,7 +212,7 @@ Restore dependencies
 
 Rebuild the project, target x64 CPU architecture. *Any CPU or x86 won't work.*
 
-Run Tests with nunit3. Tests can be found under
+Run Tests with nunit3. To make test work, *nunit3 have to use x64 processor.* This can be changed in Visual Studio under `Test` > `Test Settings` > `Default Processor Architechture` > `X64`. Tests can be found under:
 
 `Frends.File.Tests\bin\Release\Frends.SAPConnector.Tests.dll`
 

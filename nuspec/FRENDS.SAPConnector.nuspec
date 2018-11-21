@@ -2,13 +2,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata>
 		<id>FRENDS.SAPConnector</id>
-		<version>1.2.89</version>
+		<version>1.2.91</version>
 		<title>FRENDS SAP tasks</title>
 		<authors>HiQ Finland</authors>
     <owners>HiQ Finland</owners>
     <projectUrl>https://github.com/FrendsPlatform/Frends.SAPConnector</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>FRENDS SAP tasks</description>
+		<description>Provides tasks to execute RFC functions and to query tables with (BBP_)RFC_READ_TABLE or custom functions. See: https://github.com/FrendsPlatform/Frends.SAPConnector </description>
 		<summary />
 		<dependencies>
 			<dependency id="NSAPConnector_x64" version="[1.0.1]" />

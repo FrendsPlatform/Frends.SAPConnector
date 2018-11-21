@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using NSAPConnector;
 using Newtonsoft.Json.Linq;
@@ -22,7 +20,9 @@ namespace Frends.SAPConnector
         /// <summary>
         /// Execute SAP RFC-function.
         /// </summary>
-        /// <returns>JToken dictionary of export parameter or table values returned by SAP function. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
+        /// <param name="taskInput">Task input parameters</param>
+        /// <param name="cancellationToken">cancellationToken</param>
+        /// <returns>JToken dictionary of export parameter or table values returned by SAP function. See: https://github.com/FrendsPlatform/Frends.SAPConnector#ExecuteFunction </returns>
         public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput, CancellationToken cancellationToken)
         
         {
@@ -176,7 +176,8 @@ namespace Frends.SAPConnector
         /// </summary>
         /// <param name="query">Query parameters</param>
         /// <param name="options">Connection options</param>
-        /// <returns>JToken containing data returned by table query. See: https://github.com/FrendsPlatform/Frends.SAPConnector </returns>
+        /// <param name="cancellationToken">cancellationToken</param>
+        /// <returns>JToken containing data returned by table query. See: https://github.com/FrendsPlatform/Frends.SAPConnector#ExecuteQuery </returns>
         public static dynamic ExecuteQuery(InputQuery query, Options options, CancellationToken cancellationToken)
         {
             char delimiter;
@@ -475,7 +476,7 @@ namespace Frends.SAPConnector
         }
 
         /// <summary>
-        /// Exposes methods of RfcRepository class of SAP Connector for Microsoft .NET 3.0. Usually this task is not needed for other than debugging purposes. See: https://github.com/FrendsPlatform/Frends.SAPConnector SAP documentation for Repository: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
+        /// Exposes methods of RfcRepository class of SAP Connector for Microsoft .NET 3.0. Usually this task is not needed for other than debugging purposes. See: https://github.com/FrendsPlatform/Frends.SAPConnector#RfcRepositoryModifier SAP documentation for Repository: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
         /// </summary>
         /// <param name="repositoryInput">Query parameters</param>
         /// <returns>Dynamic object or NULL containing data returned by selected function. </returns>

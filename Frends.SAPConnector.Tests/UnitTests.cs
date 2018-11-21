@@ -1,7 +1,6 @@
 ﻿using FRENDS.SAPConnector;
 using NUnit.Framework;
 using Newtonsoft.Json;
-using SAP.Middleware.Connector;
 using System;
 using System.Threading;
 
@@ -38,9 +37,7 @@ namespace Frends.SAPConnector.Tests
             Assert.That((string)results["DATE_GET_WEEK"]["WEEK"], Is.EqualTo("201844"));
         }
 
-
         [Test]
-
         public void ExecuteFunctionWithJSON()
         {
             var input = new ExecuteFunctionInput
@@ -135,7 +132,6 @@ namespace Frends.SAPConnector.Tests
             string expected = "{\"Name\":\"DATE_GET_WEEK\",\"ContainerType\":3,\"BasXmlEnabled\":false,\"ParameterCount\":2,\"ExceptionCount\":1,\"Locked\":true}";
 
             Assert.That(JsonConvert.SerializeObject(ret), Is.EqualTo(expected));
-
         }
     }
 }
