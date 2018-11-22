@@ -127,7 +127,7 @@ namespace Frends.SAPConnector
         [DisplayName ("Parameter Name")]
         public string Name { get; set; }
         /// <summary>
-        /// Value of parameter.
+        /// Value passed as parameter.
         /// </summary>
         public string Value { get; set; }
     }

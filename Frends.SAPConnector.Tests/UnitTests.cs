@@ -9,7 +9,8 @@ namespace Frends.SAPConnector.Tests
     [TestFixture]
     public class UnitTest
     {
-        private static readonly string ConnectionString2 = "ASHOST=xxx;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
+
+        private static readonly string ConnectionString2 = "ASHOST=23.97.238.8;SYSNR=00;CLIENT=100;LANG=EN;USER=S4H_EWM;PASSWD=Welcome1;IDLE_TIMEOUT=60;";
 
         [Test]
         public void ExecuteFunctionWithParameters()
@@ -131,7 +132,7 @@ namespace Frends.SAPConnector.Tests
             {
                 ConnectionString = ConnectionString2,
                 function = RfcRepositoryModifierFunctions.GetFunctionMetadata,
-                name = "DATE_GET_WEEK",
+                Name = "DATE_GET_WEEK",
             };
 
             var ret = SAP.RfcRepositoryModifier(input, new CancellationToken());

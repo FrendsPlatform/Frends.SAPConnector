@@ -7,6 +7,7 @@ using SAP.Middleware.Connector;
 using System.Text.RegularExpressions;
 using FRENDS.SAPConnector;
 using System.Threading;
+using System.Linq;
 
 
 #pragma warning disable 1591
@@ -24,10 +25,9 @@ namespace Frends.SAPConnector
         /// <param name="cancellationToken">cancellationToken</param>
         /// <returns>JToken dictionary of export parameter or table values returned by SAP function. See: https://github.com/FrendsPlatform/Frends.SAPConnector#ExecuteFunction </returns>
         public static dynamic ExecuteFunction(ExecuteFunctionInput taskInput, CancellationToken cancellationToken)
-        
         {
 
-            Dictionary<String, String> connectionParams = new Dictionary<string, string>();
+            Dictionary<String, String> connectionParams;
 
             // Read connection parameters from task input
             try
@@ -78,93 +78,80 @@ namespace Frends.SAPConnector
             {
                 connection.Open();
 
-                // https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/content.htm?no_cache=true
-                // https://archive.sap.com/discussions/thread/3184438
-
                 var repo = connection.Destination.Repository;
 
                 using (var session = new SapSession(connection))
                 {
-                    session.StartSession();
-                    
-                    foreach (var f in input.Functions)
+                    try
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            session.EndSession();
-                            throw new OperationCanceledException(cancellationToken);
-                        }
-                        try
-                        {
-                            sapFunction = repo.CreateFunction(f.Name);
-                        }
-                        catch (Exception e)
-                        {
-                            session.EndSession();
-                            throw new Exception($"Failed to create function: {e.Message}", e);
-                        }
+                        session.StartSession();
 
-                        try
+                        foreach (var f in input.Functions)
                         {
-                            f.PopulateRfcDataContainer(sapFunction);
-                        }
-                        catch (Exception e)
-                        {
-                            session.EndSession();
-                            throw new Exception($"Failed to populate function input structure: {e.Message}", e);
-                        }
-
-
-                        try
-                        {
-                            sapFunction.Invoke(connection.Destination);
-                        }
-                        catch (Exception e)
-                        {
-                            session.EndSession();
-                            throw new Exception($"Invoking function failed: {e.Message}", e);
-                        }
-
-                        try
-                        {
-
-                            var tables = GetTableNames(sapFunction);
-                            var exportParams = GetExportParameters(sapFunction);
-
-                            var tablesAsJObject = new JObject();
-
-                            foreach (var table in tables)
+                            cancellationToken.ThrowIfCancellationRequested();
+                            try
                             {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    session.EndSession();
-                                    throw new OperationCanceledException(cancellationToken);
-                                }
-                                var rfcTable = sapFunction.GetTable(table);
-                                tablesAsJObject.Add(table, JToken.FromObject(RfcTableToDataTable(rfcTable, table)));
+                                sapFunction = repo.CreateFunction(f.Name);
+                            }
+                            catch (Exception e)
+                            {
+                                throw new Exception($"Failed to create function: {e.Message}", e);
                             }
 
-                            foreach (var parameter in exportParams)
+                            try
                             {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    session.EndSession();
-                                    throw new OperationCanceledException(cancellationToken);
-                                }
-                                tablesAsJObject.Add(parameter.Key, parameter.Value);
+                                f.PopulateRfcDataContainer(sapFunction);
+                            }
+                            catch (Exception e)
+                            {
+                                throw new Exception($"Failed to populate function input structure: {e.Message}", e);
                             }
 
-                            returnvalues.Add(f.Name, tablesAsJObject);
+                            try
+                            {
+                                sapFunction.Invoke(connection.Destination);
+                            }
+                            catch (Exception e)
+                            {
+                                throw new Exception($"Invoking function failed: {e.Message}", e);
+                            }
+
+                            try
+                            {
+                                var tables = GetTableNames(sapFunction);
+                                var exportParams = GetExportParameters(sapFunction);
+
+                                var tablesAsJObject = new JObject();
+
+                                foreach (var table in tables)
+                                {
+                                    cancellationToken.ThrowIfCancellationRequested();
+
+                                    var rfcTable = sapFunction.GetTable(table);
+                                    tablesAsJObject.Add(table, JToken.FromObject(RfcTableToDataTable(rfcTable, table)));
+                                }
+
+                                foreach (var parameter in exportParams)
+                                {
+                                    cancellationToken.ThrowIfCancellationRequested();
+                                    tablesAsJObject.Add(parameter.Key, parameter.Value);
+                                }
+
+                                returnvalues.Add(f.Name, tablesAsJObject);
+                            }
+
+                            catch (Exception e)
+                            {
+                                session.EndSession();
+                                throw new Exception($"Failed to read return values: {e.Message}", e);
+                            }
                         }
 
-                        catch (Exception e)
-                        {
-                            session.EndSession();
-                            throw new Exception($"Failed to read return values: {e.Message}", e);
-                        }
                     }
-
-                    session.EndSession();
+                    finally
+                    {
+                        session.EndSession();
+                    }
                 }
             }
 
@@ -191,7 +178,7 @@ namespace Frends.SAPConnector
             var fieldNames = query.Fields.Split(',');
             IRfcFunction readerRfc;
 
-            Dictionary<String, String> connectionParams = new Dictionary<string, string>();
+            Dictionary<String, String> connectionParams;
 
             // Read connection parameters from task input
             try
@@ -242,10 +229,6 @@ namespace Frends.SAPConnector
 
                     foreach (var field in fieldNames)
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            throw new OperationCanceledException(cancellationToken);
-                        }
                         var fieldsRow = fieldsTable.Metadata.LineType.CreateStructure();
                         fieldsRow.SetValue(0, field.Trim());
                         fieldsTable.Append(fieldsRow);
@@ -255,14 +238,14 @@ namespace Frends.SAPConnector
 
                     foreach (var chunk in SplitSapFilterString(query.Filter))
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            throw new OperationCanceledException(cancellationToken);
-                        }
+
                         var optionsRow = optionsTable.Metadata.LineType.CreateStructure();
                         optionsRow.SetValue("TEXT", chunk);
                         optionsTable.Append(optionsRow);
                     }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
                 }
                 catch (Exception e)
                 {
@@ -345,6 +328,8 @@ namespace Frends.SAPConnector
                         row[column.ColumnName] = rfcTable.CurrentRow[column.ColumnName].GetShort();
                     else if (column.DataType == typeof(double))
                         row[column.ColumnName] = rfcTable.CurrentRow[column.ColumnName].GetDouble();
+                    else if (column.DataType == typeof(long))
+                        row[column.ColumnName] = rfcTable.CurrentRow[column.ColumnName].GetLong();
                     else
                         row[column.ColumnName] = rfcTable.CurrentRow[column.ColumnName].GetString();
                 }
@@ -397,10 +382,9 @@ namespace Frends.SAPConnector
         private static Dictionary<string, string> ConnectionStringToDictionary(string sapConnStr)
         {
             var connectionParams = new Dictionary<string, string>();
-            foreach (var param in sapConnStr.Split(';'))
+            foreach (var param in sapConnStr.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim().Split('=').Select(s2 => s2.Trim()).ToArray()))
             {
-                if (param != "") // it is allowed to ; be last character    
-                    connectionParams.Add(param.TrimEnd().TrimStart().Split('=')[0], param.TrimEnd().TrimStart().Split('=')[1]);
+                connectionParams.Add(param[0], param[1]);
             }
             return connectionParams;
         }
@@ -479,6 +463,7 @@ namespace Frends.SAPConnector
         /// Exposes methods of RfcRepository class of SAP Connector for Microsoft .NET 3.0. Usually this task is not needed for other than debugging purposes. See: https://github.com/FrendsPlatform/Frends.SAPConnector#RfcRepositoryModifier SAP documentation for Repository: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
         /// </summary>
         /// <param name="input">Query parameters</param>
+        /// <param name="cancellationToken">Cancellation Tokens</param>
         /// <returns>Dynamic object or NULL containing data returned by selected function. </returns>
         public static dynamic RfcRepositoryModifier(RfcRepositoryInput input, CancellationToken cancellationToken)
         {
@@ -495,74 +480,77 @@ namespace Frends.SAPConnector
                 throw new Exception($"Failed reading parameters from connection string: {e.Message}", e);
             }
 
-            var returnvalues = new Object();
+            var returnValues = new Object();
 
             using (var connection = new SapConnection(connectionParams))
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException(cancellationToken);
-                }
+                cancellationToken.ThrowIfCancellationRequested();
 
                 connection.Open();
                 var repo = connection.Destination.Repository;
 
                 using (var session = new SapSession(connection))
                 {
-                    session.StartSession();
-                    if (cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        throw new OperationCanceledException(cancellationToken);
+
+                        session.StartSession();
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        switch (input.function)
+                        {
+                            case RfcRepositoryModifierFunctions.ClearAbapObjectMetadata:
+                                repo.ClearAbapObjectMetadata();
+                                break;
+                            case RfcRepositoryModifierFunctions.ClearAllMetadata:
+                                repo.ClearAllMetadata();
+                                break;
+                            case RfcRepositoryModifierFunctions.ClearFunctionMetadata:
+                                repo.ClearFunctionMetadata();
+                                break;
+                            case RfcRepositoryModifierFunctions.ClearTableMetadata:
+                                repo.ClearTableMetadata();
+                                break;
+                            case RfcRepositoryModifierFunctions.GetFunctionMetadata:
+                                returnValues = repo.GetFunctionMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.CreateFunction:
+                                returnValues = repo.CreateFunction(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.GetAbapObjectMetadata:
+                                returnValues = repo.GetAbapObjectMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.GetStructureMetadata:
+                                returnValues = repo.GetStructureMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.GetTableMetadata:
+                                returnValues = repo.GetTableMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.RemoveAbapObjectMetadata:
+                                repo.RemoveAbapObjectMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.RemoveFunctionMetadata:
+                                repo.RemoveFunctionMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.RemoveStructureMetadata:
+                                repo.RemoveStructureMetadata(input.Name);
+                                break;
+                            case RfcRepositoryModifierFunctions.RemoveTableMetadata:
+                                repo.RemoveTableMetadata(input.Name);
+                                break;
+                            default:
+                                returnValues = "Unknown/Not implemented function!";
+                                break;
+                        }
+                    }
+                    finally
+                    {
+                        session.EndSession();
                     }
 
-                    switch (input.function)
-                    {
-                        case RfcRepositoryModifierFunctions.ClearAbapObjectMetadata:
-                            repo.ClearAbapObjectMetadata();
-                            break;
-                        case RfcRepositoryModifierFunctions.ClearAllMetadata:
-                            repo.ClearAllMetadata();
-                            break;
-                        case RfcRepositoryModifierFunctions.ClearFunctionMetadata:
-                            repo.ClearFunctionMetadata();
-                            break;
-                        case RfcRepositoryModifierFunctions.ClearTableMetadata:
-                            repo.ClearTableMetadata();
-                            break;
-                        case RfcRepositoryModifierFunctions.GetFunctionMetadata:
-                            returnvalues = repo.GetFunctionMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.CreateFunction:
-                            returnvalues = repo.CreateFunction(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.GetAbapObjectMetadata:
-                            returnvalues = repo.GetAbapObjectMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.GetStructureMetadata:
-                            returnvalues = repo.GetStructureMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.GetTableMetadata:
-                            returnvalues = repo.GetTableMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.RemoveAbapObjectMetadata:
-                            repo.RemoveAbapObjectMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.RemoveFunctionMetadata:
-                            repo.RemoveFunctionMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.RemoveStructureMetadata:
-                            repo.RemoveStructureMetadata(input.name);
-                            break;
-                        case RfcRepositoryModifierFunctions.RemoveTableMetadata:
-                            repo.RemoveTableMetadata(input.name);
-                            break;
-                        default:
-                            returnvalues = "Unkwon/Not implemented function!";
-                            break;
-                    }
                 }
             }
-            return returnvalues;
+            return returnValues;
         }
     }
 }

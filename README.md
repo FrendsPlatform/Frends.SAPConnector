@@ -1,17 +1,17 @@
 # Frends.SAPConnector
-FRENDS SAP tasks to execute RFC functions Querying tables.  
+FRENDS SAP Tasks to execute RFC functions Querying tables.  
 
-These tasks require the Microsoft C++ Runtime DLLs version 10.0 (contained in Microsoft Visual C++ 2010 Redistributables), so they must be installed in advance. These tasks will also only work with the 64-bit processor.
+These Tasks require the Microsoft C++ Runtime DLLs version 10.0 (contained in Microsoft Visual C++ 2010 Redistributables), so they must be installed in advance. These Tasks will also only work with the 64-bit processor.
 
-These tasks rely on SAP Connector for Microsoft .NET 3.0 https://support.sap.com/en/product/connectors/msnet.html. Support for connector will end at December 31, 2020.
+These Tasks rely on SAP Connector for Microsoft .NET 3.0 https://support.sap.com/en/product/connectors/msnet.html. Support for connector will end at December 31, 2020.
 
-At the moment tasks don't cache table metadata coming from the SAP. In some circumstances, this might slow the performance as metadata have to be fetched every time.
+At the moment Tasks don't cache table metadata coming from the SAP. In some circumstances, this might slow the performance as metadata have to be fetched every time.
 
 - [Installing](#installing)
 - [Tasks](#tasks)
     - [ExecuteFunction](#ExecuteFunction)
     - [ExecuteQuery](#ExecuteQuery)
-	- [RfcRepositoryModifier](#RfcRepositoryModifier)
+    - [RfcRepositoryModifier](#RfcRepositoryModifier)
 - [License](#license)
 - [Building](#building)
 - [Contributing](#contributing)
@@ -19,15 +19,15 @@ At the moment tasks don't cache table metadata coming from the SAP. In some circ
 Installing
 ==========
 
-**NOTE: During development following task is not available from the following feed:**
+**NOTE: During development following Task is not available from the following feed:**
 
-You can install the task via FRENDS UI Task view, by searching for packages. You can also download the latest NuGet package from https://www.myget.org/feed/frends/package/nuget/Frends.SAPConnector. and import it manually via the Task view.
+You can install the Task via FRENDS UI Task view, by searching for packages. You can also download the latest NuGet package from https://www.myget.org/feed/frends/package/nuget/Frends.SAPConnector. and import it manually via the Task view.
 
 Tasks
 =====
 
 ## ExecuteFunction
-Frends.SAPConnector.SAP.ExecuteFunction task to execute SAP RFC-function. Returns: JToken dictionary of export parameter or table values returned by SAP function.
+Frends.SAPConnector.SAP.ExecuteFunction Task to execute SAP RFC-function. Returns: JToken dictionary of export parameter or table values returned by SAP function.
 
 ### Input:
 
@@ -48,9 +48,9 @@ For example, DATE_GET_WEEK function can be used to calculate the week number for
 |-----------------|----------|-----------------------------------|---------------------------------------|
 | Functions | array | Array Name of function(s) and parameter(s) to be called. |  |
 | name | string | Name of function to be called. |   `DATE_GET_WEEK`   |
-| Fields | array | Defines if PARAMETERS or JSON is used.    |  |
-| Name | string | Defines if PARAMETERS or JSON is used.    | `DATE`   |
-| Value | string | Defines if PARAMETERS or JSON is used.    | `20181031`   |
+| Fields | array |     |  |
+| Name | string |     | `DATE`   |
+| Value | string |   | `20181031`   |
 
 Example values would return object "DATE_GET_WEEK" with property "WEEK" with value "201844".
 
@@ -73,7 +73,7 @@ Key "Field" defines an array of fields.
    }
 ```
 
-Kay "Tables" defines an array of tables. The array contains objects i.e. tables. In each object key, "Name" defines a table name and Key "Rows" defines an array of rows in the table. Rows them self can contain fields, structures, and tables.
+Key "Tables" defines an array of tables. The array contains objects i.e. tables. In each object key, "Name" defines a table name and Key "Rows" defines an array of rows in the table. Rows them self can contain fields, structures, and tables.
 
 ```json
 "Tables": [
@@ -176,7 +176,7 @@ This would return object "DATE_GET_WEEK" with property "WEEK" with value "201844
 Returns a JToken dictionary of export parameter or table values returned by SAP function.
 
 ## ExecuteQuery
-Frends.SAPConnector.ExecuteQuery task to query SAP table.
+Frends.SAPConnector.ExecuteQuery Task to query SAP table.
 
 ### Input:
 
@@ -192,7 +192,7 @@ Frends.SAPConnector.ExecuteQuery task to query SAP table.
 | CustomFunctionName | string | When ReadTableTargetRFC is set to CUSTOM_FUNCTION this parameter is used to define name of any function. The function must take the same parameters and return similar data as RFC_READ_TABLE and BBP_RFC_READ_TABLE. A custom function can be used to overcome limitations of built-in functions. | `ZRFC_READ_TABLE` |
 
 ## RfcRepositoryModifier
-Frends.SAPConnector.RfcRepositoryModifier task to handle RfcRepository class from NCO 3.0 direcly. These functions are rarely neede and they are documented at: https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
+Frends.SAPConnector.RfcRepositoryModifier Task to handle RfcRepository class from NCO 3.0 directly. These functions are rarely needed and they are documented at https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
 
 License
 =======

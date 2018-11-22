@@ -31,7 +31,7 @@ namespace FRENDS.SAPConnector
         /// <summary>
         /// Parameter to function. Usually name of RFC function.
         /// </summary>
-        public string name;
+        public string Name;
     }
 
     /// <summary>
