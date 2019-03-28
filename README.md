@@ -191,8 +191,6 @@ Frends.SAPConnector.ExecuteQuery Task to query SAP table.
 | Delimiter | string | Delimiter used in the table. | `~` |
 | CustomFunctionName | string | When ReadTableTargetRFC is set to CUSTOM_FUNCTION this parameter is used to define name of any function. The function must take the same parameters and return similar data as RFC_READ_TABLE and BBP_RFC_READ_TABLE. A custom function can be used to overcome limitations of built-in functions. | `ZRFC_READ_TABLE` |
 
-## RfcRepositoryModifier
-Frends.SAPConnector.RfcRepositoryModifier Task to handle RfcRepository class from NCO 3.0 directly. These functions are rarely needed and they are documented at https://help.sap.com/doc/saphelp_crm700_ehp02/7.0.2.17/en-US/0f/8635d6362c4123a37d39b2c8e652b5/frameset.htm
 
 License
 =======

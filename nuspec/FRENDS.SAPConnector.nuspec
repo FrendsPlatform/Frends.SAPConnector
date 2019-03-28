@@ -20,8 +20,8 @@
 		</frameworkAssemblies>
     </metadata>
       <files>
-        <file src="Frends.SAPConnector\bin\x64\Release\FRENDS.SAPConnector.dll" target="lib\net45\FRENDS.SAPConnector.dll" />
-        <file src="Frends.SAPConnector\bin\x64\Release\FRENDS.SAPConnector.xml" target="lib\net45\FRENDS.SAPConnector.xml" />
-        <file src="Frends.SAPConnector\FrendsTaskMetadata.json" target="FrendsTaskMetadata.json"/>
+        <file src="..\Frends.SAPConnector\bin\x64\Release\FRENDS.SAPConnector.dll" target="lib\net45\FRENDS.SAPConnector.dll" />
+        <file src="..\Frends.SAPConnector\bin\x64\Release\FRENDS.SAPConnector.xml" target="lib\net45\FRENDS.SAPConnector.xml" />
+        <file src="..\Frends.SAPConnector\FrendsTaskMetadata.json" target="FrendsTaskMetadata.json"/>
       </files>
 </package>
