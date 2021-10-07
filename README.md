@@ -3,7 +3,7 @@ FRENDS SAP Tasks to execute RFC functions Querying tables.
 
 These Tasks require the Microsoft C++ Runtime DLLs version 10.0 (contained in Microsoft Visual C++ 2010 Redistributables), so they must be installed in advance. These Tasks will also only work with the 64-bit processor.
 
-These Tasks rely on SAP Connector for Microsoft .NET 3.0 https://support.sap.com/en/product/connectors/msnet.html. Support for connector will end at December 31, 2020.
+These Tasks rely on SAP Connector for Microsoft .NET 3.0 https://support.sap.com/en/product/connectors/msnet.html. Support for connector will end at December 31, 2022.
 
 At the moment Tasks don't cache table metadata coming from the SAP. In some circumstances, this might slow the performance as metadata have to be fetched every time.
 
